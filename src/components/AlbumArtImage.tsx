@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { Play } from 'lucide-react';
+import NextImage from 'next/image';
 import { supabase } from '@/integrations/supabase/client';
 
 interface AlbumArtImageProps {
@@ -29,7 +30,6 @@ export const AlbumArtImage = ({
   const [timestamp, setTimestamp] = useState(Date.now()); // Timestamp-based cache busting for Safari
   const hasFetchedRef = useRef(false);
   const loadTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const imgRef = useRef<HTMLImageElement>(null);
 
   // Main effect to fetch album art
   useEffect(() => {
@@ -154,15 +154,13 @@ export const AlbumArtImage = ({
   // Show fallback image
   if (showFallback || !imageUrl) {
     return (
-      <div className={fallbackClassName}>
-        <img
+      <div className={`${fallbackClassName} relative overflow-hidden`}>
+        <NextImage
           src="/assets/card3-heady.webp"
           alt="HEADY Radio"
+          fill
           className={className}
-          loading="lazy"
-          decoding="async"
-          width="300"
-          height="300"
+          sizes="(max-width: 768px) 100px, 300px"
         />
       </div>
     );
@@ -170,20 +168,20 @@ export const AlbumArtImage = ({
 
   // Show the fetched image with Safari-optimized cache busting
   return (
-    <img
-      ref={imgRef}
-      key={`${artist}-${title}-${timestamp}`}
-      src={imageUrl}
-      alt={alt || 'Album artwork'}
-      className={className}
-      crossOrigin="anonymous"
-      loading="lazy"
-      decoding="async"
-      fetchPriority="auto"
-      onError={() => {
-        console.log('Image load error, showing fallback');
-        setShowFallback(true);
-      }}
-    />
+    <div className="relative w-full h-full">
+      <NextImage
+        key={`${artist}-${title}-${timestamp}`}
+        src={imageUrl}
+        alt={alt || 'Album artwork'}
+        fill
+        className={className}
+        sizes="(max-width: 768px) 100px, 300px"
+        onError={() => {
+          console.log('Image load error, showing fallback');
+          setShowFallback(true);
+        }}
+        unoptimized={imageUrl.includes('radioboss.fm')} // RadioBoss might not support optimization or headers
+      />
+    </div>
   );
 };

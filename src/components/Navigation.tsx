@@ -240,15 +240,17 @@ const Navigation = () => {
             {/* Now Playing Info */}
             {nowPlaying ? (
               <div className="flex items-center gap-3 flex-1 min-w-0">
-                <AlbumArtImage
-                  key={`nav-${nowPlaying.title}-${nowPlaying.artist}`}
-                  url={nowPlaying.album_art_url}
-                  artworkId={nowPlaying.artwork_id}
-                  artist={nowPlaying.artist}
-                  title={nowPlaying.title}
-                  alt={`${nowPlaying.title} album art`}
-                  className="w-8 h-8 rounded flex-shrink-0"
-                />
+                <div className="w-8 h-8 rounded flex-shrink-0 relative overflow-hidden">
+                  <AlbumArtImage
+                    key={`nav-${nowPlaying.title}-${nowPlaying.artist}`}
+                    url={nowPlaying.album_art_url}
+                    artworkId={nowPlaying.artwork_id}
+                    artist={nowPlaying.artist}
+                    title={nowPlaying.title}
+                    alt={`${nowPlaying.title} album art`}
+                    className="object-cover"
+                  />
+                </div>
                 <div className="min-w-0 flex items-center gap-2">
                   <span className="text-white font-medium text-sm truncate">{nowPlaying.artist}</span>
                   <span className="text-white/50">—</span>
@@ -338,15 +340,17 @@ const Navigation = () => {
             {/* Now Playing - Mobile */}
             {nowPlaying && (
               <div className="p-3 bg-white/5 rounded-lg flex items-center gap-3">
-                <AlbumArtImage
-                  key={`nav-mobile-${nowPlaying.title}-${nowPlaying.artist}`}
-                  url={nowPlaying.album_art_url}
-                  artworkId={nowPlaying.artwork_id}
-                  artist={nowPlaying.artist}
-                  title={nowPlaying.title}
-                  alt={`${nowPlaying.title} album art`}
-                  className="w-12 h-12 rounded flex-shrink-0"
-                />
+                <div className="w-12 h-12 rounded flex-shrink-0 relative overflow-hidden">
+                  <AlbumArtImage
+                    key={`nav-mobile-${nowPlaying.title}-${nowPlaying.artist}`}
+                    url={nowPlaying.album_art_url}
+                    artworkId={nowPlaying.artwork_id}
+                    artist={nowPlaying.artist}
+                    title={nowPlaying.title}
+                    alt={`${nowPlaying.title} album art`}
+                    className="object-cover"
+                  />
+                </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1">
                     <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-[#e53935] text-white text-[9px] font-bold uppercase">

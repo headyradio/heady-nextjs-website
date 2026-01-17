@@ -100,6 +100,8 @@ export const TransmissionCard = ({ transmission, index = 0 }: TransmissionCardPr
               src="https://upload.wikimedia.org/wikipedia/commons/0/09/YouTube_full-color_icon_%282017%29.svg"
               alt=""
               className="w-5 h-5"
+              width="20"
+              height="20"
               loading="lazy"
               aria-hidden="true"
             />
@@ -117,6 +119,8 @@ export const TransmissionCard = ({ transmission, index = 0 }: TransmissionCardPr
               src="https://upload.wikimedia.org/wikipedia/commons/8/84/Spotify_icon.svg"
               alt=""
               className="w-5 h-5"
+              width="20"
+              height="20"
               loading="lazy"
               aria-hidden="true"
             />

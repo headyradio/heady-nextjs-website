@@ -1,16 +1,19 @@
 import { Button } from '@/components/ui/button';
 import { Calendar, Clock, User, Headphones } from 'lucide-react';
 import Link from 'next/link';
+import Image from 'next/image';
 
 export const FeaturedCard = () => {
   return (
     <div className="relative h-full min-h-[500px] rounded-2xl overflow-hidden group border border-white/10">
-      {/* Background Image with Gradient - Using optimized WebP from CDN */}
-      <div 
-        className="absolute inset-0 bg-cover bg-center transition-transform duration-700 ease-out group-hover:scale-105"
-        style={{ 
-          backgroundImage: `url(/assets/card1-rouxbais.webp)`,
-        }}
+      {/* Background Image - Optimized for LCP */}
+      <Image
+        src="/assets/card1-rouxbais.webp"
+        alt="Night Treats Background"
+        fill
+        priority // Critical for LCP
+        className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
       />
       
       {/* Gradient Overlay */}
@@ -52,22 +55,24 @@ export const FeaturedCard = () => {
           {/* DJs */}
           <div className="flex items-center gap-4">
             <div className="flex -space-x-3">
-              <img 
-                src="/assets/card1-rouxbais.webp" 
-                alt="Rouxbais"
-                className="w-14 h-14 rounded-full border-3 border-white object-cover shadow-lg"
-                loading="lazy"
-                width="56"
-                height="56"
-              />
-              <img 
-                src="/assets/card2-dale.webp" 
-                alt="Dale"
-                className="w-14 h-14 rounded-full border-3 border-white object-cover shadow-lg"
-                loading="lazy"
-                width="56"
-                height="56"
-              />
+              <div className="relative w-14 h-14 rounded-full border-3 border-white overflow-hidden shadow-lg">
+                <Image 
+                  src="/assets/card1-rouxbais.webp" 
+                  alt="Rouxbais"
+                  fill
+                  className="object-cover"
+                  sizes="56px"
+                />
+              </div>
+              <div className="relative w-14 h-14 rounded-full border-3 border-white overflow-hidden shadow-lg">
+                <Image 
+                  src="/assets/card2-dale.webp" 
+                  alt="Dale"
+                  fill
+                  className="object-cover"
+                  sizes="56px"
+                />
+              </div>
             </div>
             <div className="flex items-center gap-2 text-white/80">
               <User className="h-5 w-5" />
