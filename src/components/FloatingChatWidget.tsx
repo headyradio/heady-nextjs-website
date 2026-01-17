@@ -42,14 +42,13 @@ export const FloatingChatWidget = () => {
           setState('active');
           markAsInteracted();
         }}
-        className={`fixed bottom-24 right-4 md:bottom-8 md:right-8 h-12 shadow-2xl transition-all duration-300 z-50 hover:scale-105 px-5 rounded-full flex items-center gap-2 group ${
-          hasInteracted 
-            ? 'bg-black/80 backdrop-blur-md border border-white/10 text-white hover:bg-black' 
-            : 'bg-primary text-primary-foreground hover:bg-primary/90 animate-pulse'
-        }`}
+        className="fixed bottom-24 right-4 md:bottom-8 md:right-8 h-12 shadow-2xl transition-all duration-300 z-50 hover:scale-105 hover:brightness-110 px-6 rounded-full flex items-center gap-3 bg-emerald-500 hover:bg-emerald-400 text-black border-2 border-emerald-400/50"
         aria-label="Open live chat"
       >
-        <div className={`w-2 h-2 rounded-full ${hasInteracted ? 'bg-emerald-500' : 'bg-white'} animate-pulse`} />
+        <span className="relative flex h-3 w-3">
+          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-black opacity-30"></span>
+          <span className="relative inline-flex rounded-full h-3 w-3 bg-black"></span>
+        </span>
         <span className="font-black tracking-widest text-xs uppercase">Live Chat</span>
       </Button>
     );
