@@ -31,29 +31,15 @@ export async function getInitialNowPlaying(): Promise<InitialNowPlayingData> {
   }
 
   try {
-    // Use Supabase Edge Function for client-side fetch
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-    
-    if (!supabaseUrl || !supabaseKey) {
-      console.warn('Supabase environment variables not configured');
-      throw new Error('Supabase environment variables not configured');
-    }
-    
+    // Use internal API route which is Edge-optimized and CDN-cached
+    // This is much faster than external Supabase Edge Function
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
+    const timeoutId = setTimeout(() => controller.abort(), 3000); // 3 second timeout (reduced from 5s)
     
-    const response = await fetch(
-      `${supabaseUrl}/functions/v1/get-now-playing`,
-      {
-        method: 'GET',
-        headers: {
-          'apikey': supabaseKey,
-        },
-        cache: 'no-store',
-        signal: controller.signal,
-      }
-    );
+    const response = await fetch('/api/now-playing', {
+      method: 'GET',
+      signal: controller.signal,
+    });
     
     clearTimeout(timeoutId);
 

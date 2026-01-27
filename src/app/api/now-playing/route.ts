@@ -1,14 +1,17 @@
 import { NextResponse } from 'next/server';
 
+// Use Edge Runtime for sub-50ms cold starts (vs ~2-5s for Node.js)
+// This is critical for fast now-playing data delivery
+export const runtime = 'edge';
+
+// Enable dynamic rendering - data changes frequently
+export const dynamic = 'force-dynamic';
+
 const RADIOBOSS_API_URL = 'https://c22.radioboss.fm/api/info/364?key=FZPFZ5DNHQOP';
 
-// In-memory cache with 30-second TTL
-let cache: {
-  data: NowPlayingResponse;
-  timestamp: number;
-} | null = null;
-
-const CACHE_TTL = 30 * 1000; // 30 seconds
+// Cache TTL for CDN (in seconds)
+const CACHE_TTL_SECONDS = 15;
+const STALE_WHILE_REVALIDATE_SECONDS = 30;
 
 export interface NowPlayingResponse {
   nowPlaying: {
@@ -78,29 +81,15 @@ async function fetchFromRadioBoss(): Promise<NowPlayingResponse> {
 }
 
 export async function GET() {
-  // Check cache first
-  if (cache && Date.now() - cache.timestamp < CACHE_TTL) {
-    return NextResponse.json(cache.data, {
-      headers: {
-        'X-Cache': 'HIT',
-        'Cache-Control': 'public, s-maxage=30, stale-while-revalidate=60',
-      },
-    });
-  }
-
-  // Fetch fresh data
+  // Fetch fresh data - let Vercel CDN handle caching via headers
   const data = await fetchFromRadioBoss();
-  
-  // Update cache
-  cache = {
-    data,
-    timestamp: Date.now(),
-  };
 
+  // Return with CDN cache headers
+  // s-maxage: cache at CDN for 15 seconds
+  // stale-while-revalidate: serve stale content for 30s while fetching fresh
   return NextResponse.json(data, {
     headers: {
-      'X-Cache': 'MISS',
-      'Cache-Control': 'public, s-maxage=30, stale-while-revalidate=60',
+      'Cache-Control': `public, s-maxage=${CACHE_TTL_SECONDS}, stale-while-revalidate=${STALE_WHILE_REVALIDATE_SECONDS}`,
     },
   });
 }

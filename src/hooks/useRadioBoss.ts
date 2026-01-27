@@ -289,14 +289,23 @@ export const useRadioBoss = (initialServerData?: InitialServerData) => {
     }
   }, [isLoading]);
 
-  // Initial fetch - only if we don't have initial data
+  // Initial fetch - only if we don't have initial data from SSR
   useEffect(() => {
     if (!isInitialized) {
-      // Try to fetch from Edge Function first (faster, cached)
-      getInitialNowPlaying()
-        .then((initialData) => {
+      // Use internal API route (Edge-optimized, fast) instead of external Supabase Edge Function
+      fetch('/api/now-playing')
+        .then(async (response) => {
+          if (!response.ok) throw new Error('API fetch failed');
+          const initialData = await response.json();
           if (initialData.nowPlaying) {
-            const converted = convertInitialData(initialData);
+            const converted: RadioBossData = {
+              nowPlaying: initialData.nowPlaying,
+              recentTracks: [initialData.nowPlaying],
+              stationName: initialData.stationName,
+              listenersCount: initialData.listenersCount,
+              isLive: initialData.isLive,
+              lastUpdate: new Date(initialData.lastUpdate),
+            };
             setData(converted);
             saveCachedData(converted);
             setIsInitialized(true);
@@ -307,7 +316,7 @@ export const useRadioBoss = (initialServerData?: InitialServerData) => {
           }
         })
         .catch(() => {
-          // Fall back to direct API call if Edge Function fails
+          // Fall back to direct API call if internal API fails
           fetchRadioData();
         });
     }
