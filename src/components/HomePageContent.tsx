@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useRadioBoss, type InitialServerData } from '@/hooks/useRadioBoss';
 import { useTransmissionHistory } from '@/hooks/useTransmissionHistory';
 import { useHotSongs } from '@/hooks/useHotSongs';
@@ -43,15 +43,36 @@ export function HomePageContent({ initialData }: HomePageContentProps) {
   const [hotSongsDisplayLimit, setHotSongsDisplayLimit] = useState(10);
   const [isLoadingMoreHot, setIsLoadingMoreHot] = useState(false);
   
-  // Data hooks - fetch more data for mobile scrolling
+  // Track if we're on desktop (prefetch all data) or mobile (defer until tab active)
+  const [isDesktop, setIsDesktop] = useState(false);
+  useEffect(() => {
+    const checkDesktop = () => setIsDesktop(window.innerWidth >= 768);
+    checkDesktop();
+    window.addEventListener('resize', checkDesktop);
+    return () => window.removeEventListener('resize', checkDesktop);
+  }, []);
+  
+  // Track which tabs have been visited (to trigger data fetch)
+  const [visitedTabs, setVisitedTabs] = useState<Set<string>>(new Set(['player']));
+  useEffect(() => {
+    if (!visitedTabs.has(mobileTab)) {
+      setVisitedTabs(prev => new Set([...prev, mobileTab]));
+    }
+  }, [mobileTab, visitedTabs]);
+  
+  // Only fetch history data on desktop OR when history tab is visited on mobile
+  const shouldFetchHistory = isDesktop || visitedTabs.has('history');
   const { data: historyData, isLoading: historyLoading, isFetching, refetch } = useTransmissionHistory({
     limit: 50,
     searchQuery: '',
     selectedDate: 'all',
     selectedHour: 'all',
+    enabled: shouldFetchHistory, // Only fetch when needed
   });
 
-  const { data: hotSongsData, isLoading: hotSongsLoading } = useHotSongs(40);
+  // Only fetch hot songs on desktop OR when hot40 tab is visited on mobile
+  const shouldFetchHotSongs = isDesktop || visitedTabs.has('hot40');
+  const { data: hotSongsData, isLoading: hotSongsLoading } = useHotSongs(40, shouldFetchHotSongs);
 
   // Update browser tab title with currently playing song
   useEffect(() => {

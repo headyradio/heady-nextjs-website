@@ -23,6 +23,7 @@ interface UseTransmissionHistoryOptions {
   searchQuery?: string;
   selectedDate?: string;
   selectedHour?: string;
+  enabled?: boolean; // Allow deferring fetch on mobile
 }
 
 export const useTransmissionHistory = ({
@@ -30,9 +31,11 @@ export const useTransmissionHistory = ({
   searchQuery = '',
   selectedDate = 'all',
   selectedHour = 'all',
+  enabled = true, // Default to enabled for backward compatibility
 }: UseTransmissionHistoryOptions = {}) => {
   const query = useQuery({
     queryKey: ['transmission-history', limit, searchQuery, selectedDate, selectedHour],
+    enabled, // Only fetch when enabled
     queryFn: async () => {
       let query = supabase
         .from('transmissions')
