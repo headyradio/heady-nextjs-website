@@ -6,10 +6,9 @@ interface HotSong extends Transmission {
   playCount: number;
 }
 
-export const useHotSongs = (limit: number = 40, enabled: boolean = true) => {
+export const useHotSongs = (limit: number = 40) => {
   return useQuery({
     queryKey: ['hot-songs', limit],
-    enabled, // Only fetch when enabled
     queryFn: async () => {
       // Get transmissions from last 7 days
       const sevenDaysAgo = new Date();

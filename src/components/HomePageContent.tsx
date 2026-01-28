@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { useRadioBoss, type InitialServerData } from '@/hooks/useRadioBoss';
 import { useTransmissionHistory } from '@/hooks/useTransmissionHistory';
 import { useHotSongs } from '@/hooks/useHotSongs';
@@ -43,41 +43,15 @@ export function HomePageContent({ initialData }: HomePageContentProps) {
   const [hotSongsDisplayLimit, setHotSongsDisplayLimit] = useState(10);
   const [isLoadingMoreHot, setIsLoadingMoreHot] = useState(false);
   
-  // Track if component has mounted (to avoid hydration mismatch)
-  const [hasMounted, setHasMounted] = useState(false);
-  const [isDesktop, setIsDesktop] = useState(true); // Default to desktop (fetch all data) to match SSR
-  
-  useEffect(() => {
-    setHasMounted(true);
-    // Only run client-side detection after mount
-    const checkDesktop = () => setIsDesktop(window.innerWidth >= 768);
-    checkDesktop();
-    window.addEventListener('resize', checkDesktop);
-    return () => window.removeEventListener('resize', checkDesktop);
-  }, []);
-  
-  // Track which tabs have been visited (to trigger data fetch)
-  const [visitedTabs, setVisitedTabs] = useState<Set<string>>(new Set(['player']));
-  useEffect(() => {
-    if (!visitedTabs.has(mobileTab)) {
-      setVisitedTabs(prev => new Set([...prev, mobileTab]));
-    }
-  }, [mobileTab, visitedTabs]);
-  
-  // On SSR and initial hydration: fetch all data (isDesktop=true)
-  // After mount on mobile: only fetch when tabs are visited
-  const shouldFetchHistory = !hasMounted || isDesktop || visitedTabs.has('history');
+  // Data hooks - fetch more data for mobile scrolling
   const { data: historyData, isLoading: historyLoading, isFetching, refetch } = useTransmissionHistory({
     limit: 50,
     searchQuery: '',
     selectedDate: 'all',
     selectedHour: 'all',
-    enabled: shouldFetchHistory,
   });
 
-  // Same pattern for hot songs
-  const shouldFetchHotSongs = !hasMounted || isDesktop || visitedTabs.has('hot40');
-  const { data: hotSongsData, isLoading: hotSongsLoading } = useHotSongs(40, shouldFetchHotSongs);
+  const { data: hotSongsData, isLoading: hotSongsLoading } = useHotSongs(40);
 
   // Update browser tab title with currently playing song
   useEffect(() => {

@@ -27,7 +27,7 @@ export const AlbumArtImage = ({
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [showFallback, setShowFallback] = useState(false);
-  const [timestamp, setTimestamp] = useState(0); // Initialize with stable value for SSR hydration
+  const [timestamp, setTimestamp] = useState(Date.now()); // Timestamp-based cache busting for Safari
   const hasFetchedRef = useRef(false);
   const loadTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -37,7 +37,7 @@ export const AlbumArtImage = ({
     setIsLoading(true);
     setShowFallback(false);
     setImageUrl(null);
-    setTimestamp(Date.now()); // Only set dynamic timestamp after hydration
+    setTimestamp(Date.now()); // Generate new timestamp for Safari cache busting
 
     const fetchAlbumArt = async () => {
       // If no artist/title, just show fallback
@@ -70,13 +70,7 @@ export const AlbumArtImage = ({
 
       // For recent transmissions:
       // Try RadioBoss URL first if available, but with timeout
-      // Skip RadioBoss URLs that are likely to fail (empty, placeholder, or known-bad patterns)
-      const shouldTryRadioBoss = url && 
-        url.length > 10 && 
-        !url.includes('placeholder') && 
-        (url.includes('radioboss.fm') || url.startsWith('http'));
-      
-      if (shouldTryRadioBoss) {
+      if (url) {
         const img = new Image();
         let loaded = false;
 
@@ -86,7 +80,7 @@ export const AlbumArtImage = ({
             img.src = ''; // Stop loading
             fetchFromService();
           }
-        }, 1500); // Reduced to 1.5 second timeout for faster fallback
+        }, 3000); // 3 second timeout
 
         loadTimeoutRef.current = loadTimeout;
 
@@ -102,13 +96,13 @@ export const AlbumArtImage = ({
         img.onerror = () => {
           loaded = true;
           clearTimeout(loadTimeout);
-          // Don't log for every failure, just skip to service
+          console.log('RadioBoss URL failed, fetching from album-art service');
           fetchFromService();
         };
 
         img.src = url;
       } else {
-        // No valid RadioBoss URL, go straight to service
+        // No RadioBoss URL, go straight to service
         fetchFromService();
       }
     };
@@ -180,10 +174,10 @@ export const AlbumArtImage = ({
         src={imageUrl}
         alt={alt || 'Album artwork'}
         fill
-        loading="lazy"
         className={className}
         sizes="(max-width: 768px) 100px, 300px"
         onError={() => {
+          console.log('Image load error, showing fallback');
           setShowFallback(true);
         }}
         unoptimized={imageUrl.includes('radioboss.fm')} // RadioBoss might not support optimization or headers
