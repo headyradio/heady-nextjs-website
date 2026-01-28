@@ -29,9 +29,15 @@ import {
 
 const Navigation = () => {
   const { nowPlaying, isLive } = useRadioBoss();
+  const [hasMounted, setHasMounted] = React.useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
   const [volumeOpen, setVolumeOpen] = React.useState(false);
   const [supportDialogOpen, setSupportDialogOpen] = React.useState(false);
+  
+  // Avoid hydration mismatch by waiting for mount before rendering dynamic content
+  React.useEffect(() => {
+    setHasMounted(true);
+  }, []);
   
   const audioPlayer = useGlobalAudioPlayer();
   const { user, signOut } = useAuth();
@@ -237,8 +243,8 @@ const Navigation = () => {
                 </div>
               </div>
 
-            {/* Now Playing Info */}
-            {nowPlaying ? (
+            {/* Now Playing Info - Show skeleton until mounted to avoid hydration mismatch */}
+            {hasMounted && nowPlaying ? (
               <div className="flex items-center gap-3 flex-1 min-w-0">
                 <div className="w-8 h-8 rounded flex-shrink-0 relative overflow-hidden">
                   <AlbumArtImage

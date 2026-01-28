@@ -27,7 +27,7 @@ export const AlbumArtImage = ({
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [showFallback, setShowFallback] = useState(false);
-  const [timestamp, setTimestamp] = useState(Date.now()); // Timestamp-based cache busting for Safari
+  const [timestamp, setTimestamp] = useState(0); // Initialize with stable value for SSR hydration
   const hasFetchedRef = useRef(false);
   const loadTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -37,7 +37,7 @@ export const AlbumArtImage = ({
     setIsLoading(true);
     setShowFallback(false);
     setImageUrl(null);
-    setTimestamp(Date.now()); // Generate new timestamp for Safari cache busting
+    setTimestamp(Date.now()); // Only set dynamic timestamp after hydration
 
     const fetchAlbumArt = async () => {
       // If no artist/title, just show fallback

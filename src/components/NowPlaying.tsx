@@ -7,7 +7,7 @@ import { Button } from './ui/button';
 import Link from 'next/link';
 import { getYouTubeSearchUrl, getSpotifySearchUrl } from '@/lib/musicServiceLinks';
 import { useGlobalAudioPlayer } from '@/contexts/AudioPlayerContext';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 interface NowPlayingProps {
   transmission: Transmission | null;
@@ -16,6 +16,12 @@ interface NowPlayingProps {
 
 export const NowPlaying = ({ transmission, isLive = false }: NowPlayingProps) => {
   const audioPlayer = useGlobalAudioPlayer();
+  
+  // Avoid hydration mismatch by waiting for client mount
+  const [hasMounted, setHasMounted] = useState(false);
+  useEffect(() => {
+    setHasMounted(true);
+  }, []);
   
   // Update Media Session API for lock screen display
   useEffect(() => {
@@ -54,7 +60,8 @@ export const NowPlaying = ({ transmission, isLive = false }: NowPlayingProps) =>
     };
   }, [transmission, audioPlayer.isPlaying, audioPlayer.play, audioPlayer.pause]);
   
-  if (!transmission) {
+  // Show loading state until mounted to avoid hydration mismatch
+  if (!hasMounted || !transmission) {
     return (
       <div className="md:border md:border-white/10 md:rounded-2xl p-4 md:p-12 bg-transparent">
         <div className="flex items-center justify-center h-64 text-white/50">

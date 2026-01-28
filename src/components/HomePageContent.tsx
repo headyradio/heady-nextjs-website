@@ -43,9 +43,13 @@ export function HomePageContent({ initialData }: HomePageContentProps) {
   const [hotSongsDisplayLimit, setHotSongsDisplayLimit] = useState(10);
   const [isLoadingMoreHot, setIsLoadingMoreHot] = useState(false);
   
-  // Track if we're on desktop (prefetch all data) or mobile (defer until tab active)
-  const [isDesktop, setIsDesktop] = useState(false);
+  // Track if component has mounted (to avoid hydration mismatch)
+  const [hasMounted, setHasMounted] = useState(false);
+  const [isDesktop, setIsDesktop] = useState(true); // Default to desktop (fetch all data) to match SSR
+  
   useEffect(() => {
+    setHasMounted(true);
+    // Only run client-side detection after mount
     const checkDesktop = () => setIsDesktop(window.innerWidth >= 768);
     checkDesktop();
     window.addEventListener('resize', checkDesktop);
@@ -60,18 +64,19 @@ export function HomePageContent({ initialData }: HomePageContentProps) {
     }
   }, [mobileTab, visitedTabs]);
   
-  // Only fetch history data on desktop OR when history tab is visited on mobile
-  const shouldFetchHistory = isDesktop || visitedTabs.has('history');
+  // On SSR and initial hydration: fetch all data (isDesktop=true)
+  // After mount on mobile: only fetch when tabs are visited
+  const shouldFetchHistory = !hasMounted || isDesktop || visitedTabs.has('history');
   const { data: historyData, isLoading: historyLoading, isFetching, refetch } = useTransmissionHistory({
     limit: 50,
     searchQuery: '',
     selectedDate: 'all',
     selectedHour: 'all',
-    enabled: shouldFetchHistory, // Only fetch when needed
+    enabled: shouldFetchHistory,
   });
 
-  // Only fetch hot songs on desktop OR when hot40 tab is visited on mobile
-  const shouldFetchHotSongs = isDesktop || visitedTabs.has('hot40');
+  // Same pattern for hot songs
+  const shouldFetchHotSongs = !hasMounted || isDesktop || visitedTabs.has('hot40');
   const { data: hotSongsData, isLoading: hotSongsLoading } = useHotSongs(40, shouldFetchHotSongs);
 
   // Update browser tab title with currently playing song
