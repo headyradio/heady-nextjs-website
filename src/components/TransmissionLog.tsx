@@ -79,8 +79,7 @@ export const TransmissionLog = ({
           <Button
             onClick={handleLoadMore}
             size="lg"
-            variant="outline"
-            className="font-bold px-8 group hover-scale"
+            className="font-bold px-8 group hover-scale bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 text-white border-0 shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/40 transition-all duration-300"
             disabled={isFetching}
           >
             {isFetching ? (

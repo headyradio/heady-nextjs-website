@@ -1,6 +1,7 @@
 import { Clock } from 'lucide-react';
 import { Transmission } from '@/hooks/useRadioBoss';
 import { formatDistanceToNow, format, parseISO } from 'date-fns';
+import { toZonedTime } from 'date-fns-tz';
 
 import { AlbumArtImage } from './AlbumArtImage';
 import { getYouTubeSearchUrl, getSpotifySearchUrl } from '@/lib/musicServiceLinks';
@@ -13,12 +14,11 @@ interface TransmissionCardProps {
 }
 
 export const TransmissionCard = ({ transmission, index = 0 }: TransmissionCardProps) => {
-  // Parse the timestamp - convert postgres timestamp to proper ISO format
-  // Postgres format: "2025-09-30 18:00:38+00" -> ISO format: "2025-09-30T18:00:38Z"
-  const isoTimestamp = transmission.play_started_at.replace(' ', 'T').replace('+00', 'Z');
-  const playDate = parseISO(isoTimestamp);
-  const playedAgo = formatDistanceToNow(playDate, { addSuffix: true });
-  const playTime = format(playDate, 'h:mm a');
+  // Parse the timestamp and convert to local timezone
+  const playDate = parseISO(transmission.play_started_at);
+  const localTime = toZonedTime(playDate, Intl.DateTimeFormat().resolvedOptions().timeZone);
+  const playedAgo = formatDistanceToNow(localTime, { addSuffix: true });
+  const playTime = format(localTime, 'h:mm a');
   
   // Consistent green border for all cards
 

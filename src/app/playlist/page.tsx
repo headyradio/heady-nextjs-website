@@ -17,7 +17,7 @@ export default function PlaylistPage() {
   const [isLoadingMore, setIsLoadingMore] = useState(false);
 
   const { data: historyData, isLoading, isFetching } = useTransmissionHistory({
-    limit: 100,
+    limit: 500,
     searchQuery,
     selectedDate,
     selectedHour,
@@ -76,9 +76,8 @@ export default function PlaylistPage() {
               <div className="mt-8 text-center">
                 <Button
                   onClick={handleLoadMore}
-                  variant="outline"
                   size="lg"
-                  className="font-bold"
+                  className="font-bold bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 text-white border-0 shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/40 transition-all duration-300 px-10 py-3 text-base"
                   disabled={isLoadingMore}
                 >
                   {isLoadingMore ? "Loading..." : "Load More"}
