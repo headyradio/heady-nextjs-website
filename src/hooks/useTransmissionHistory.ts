@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { isStationIdTrack } from '@/utils/stationFiltering';
 
 export interface TransmissionHistory {
   id: string;
@@ -81,6 +82,11 @@ export const useTransmissionHistory = ({
       const seenTracks = new Map<string, Date>();
       
       for (const transmission of filteredData) {
+        // Filter out station IDs
+        if (isStationIdTrack(transmission)) {
+          continue;
+        }
+
         const trackKey = `${transmission.artist.toLowerCase()}-${transmission.title.toLowerCase()}`;
         const playTime = new Date(transmission.play_started_at);
         

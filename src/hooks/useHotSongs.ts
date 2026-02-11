@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Transmission } from './useRadioBoss';
+import { isStationIdTrack } from '@/utils/stationFiltering';
 
 interface HotSong extends Transmission {
   playCount: number;
@@ -30,6 +31,11 @@ export const useHotSongs = (limit: number = 40) => {
       const filteredData = data?.filter(transmission => {
         const artist = transmission.artist?.toLowerCase() || '';
         const title = transmission.title?.toLowerCase() || '';
+
+        // Filter out station IDs
+        if (isStationIdTrack(transmission)) {
+          return false;
+        }
         
         // Filter out Unknown Artist and Extraterrestrial Radio
         return !(
