@@ -17,7 +17,10 @@ export const TransmissionCard = ({ transmission, index = 0 }: TransmissionCardPr
   // Parse the timestamp and convert to local timezone
   const playDate = parseISO(transmission.play_started_at);
   const localTime = toZonedTime(playDate, Intl.DateTimeFormat().resolvedOptions().timeZone);
-  const playedAgo = formatDistanceToNow(localTime, { addSuffix: true });
+  // Cap future timestamps to show "just now" instead of "in X hours"
+  const now = new Date();
+  const displayTime = localTime > now ? now : localTime;
+  const playedAgo = formatDistanceToNow(displayTime, { addSuffix: true });
   const playTime = format(localTime, 'h:mm a');
   
   // Consistent green border for all cards
