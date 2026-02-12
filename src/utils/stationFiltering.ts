@@ -22,7 +22,8 @@ export const isStationIdTrack = (track: { title?: string | null, artist?: string
     title === "heady.fm" ||
     title === "heady radio" ||
     title === "station identification" ||
-    title === "station identifcation" // Handle user's typo if present in data
+    title === "station identifcation" || // Handle user's typo if present in data
+    title === "you're listening to heady radio 20" // Specific station ID variant
   ) {
     return true;
   }
@@ -30,7 +31,8 @@ export const isStationIdTrack = (track: { title?: string | null, artist?: string
   // Check specific artists provided by user
   if (
     artist === "heady.fm" || 
-    artist === "heady radio"
+    artist === "heady radio" ||
+    artist === "visit heady.fm"
   ) {
     return true;
   }
@@ -38,7 +40,8 @@ export const isStationIdTrack = (track: { title?: string | null, artist?: string
   // Check specific albums provided by user (including typo)
   if (
     album === "station identifcation" || 
-    album === "station identification"
+    album === "station identification" ||
+    album === "heady.fm"
   ) {
     return true;
   }
