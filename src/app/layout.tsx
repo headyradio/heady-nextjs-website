@@ -8,7 +8,7 @@ import { FloatingChatWidget } from "@/components/FloatingChatWidget";
 export const metadata: Metadata = {
   metadataBase: new URL("https://heady.fm"),
   title: {
-    default: "HEADY.FM - Commercial-Free Indie Rock Radio",
+    default: "Alternative & Indie Rock Radio - HEADY.FM",
     template: "%s | HEADY.FM",
   },
   description:
@@ -29,7 +29,7 @@ export const metadata: Metadata = {
     locale: "en_US",
     url: "https://heady.fm",
     siteName: "HEADY.FM",
-    title: "HEADY.FM - Commercial-Free Indie Rock Radio",
+    title: "Alternative & Indie Rock Radio - HEADY.FM",
     description:
       "Stream commercial-free music 24/7 on HEADY.FM. Discover underground music, your favorite tracks, emerging artists, and deep cuts without interruptions.",
     images: [
@@ -43,7 +43,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "HEADY.FM - Commercial-Free Indie Rock Radio",
+    title: "Alternative & Indie Rock Radio - HEADY.FM",
     description: "Stream commercial-free music 24/7 on HEADY.FM",
     images: ["/og-image.png"],
   },

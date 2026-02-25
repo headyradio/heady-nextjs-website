@@ -52,7 +52,7 @@ export default function CommunityPage() {
       <FloatingChatWidget />
       
       <footer className="container mx-auto px-4 py-12 border-t border-white/10 text-center text-sm text-white/50">
-        <p>© {new Date().getFullYear()} HEADY Radio. All transmissions received and logged.</p>
+        <p>©2026 HEADY Radio, a Prospect Media property. All rights reserved.</p>
       </footer>
     </div>
   );

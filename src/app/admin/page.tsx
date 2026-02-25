@@ -90,7 +90,7 @@ export default function AdminPage() {
       </div>
       
       <footer className="container mx-auto px-4 py-12 border-t border-white/10 text-center text-sm text-white/50">
-        <p>© {new Date().getFullYear()} HEADY Radio Admin</p>
+        <p>©2026 HEADY Radio Admin</p>
       </footer>
     </div>
   );

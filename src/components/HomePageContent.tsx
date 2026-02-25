@@ -58,11 +58,11 @@ export function HomePageContent({ initialData }: HomePageContentProps) {
     if (nowPlaying && nowPlaying.artist && nowPlaying.title) {
       document.title = `${nowPlaying.artist} - ${nowPlaying.title} | HEADY.FM`;
     } else {
-      document.title = 'HEADY.FM - Commercial-Free Indie Rock Radio';
+      document.title = 'Alternative & Indie Rock Radio - HEADY.FM';
     }
     
     return () => {
-      document.title = 'HEADY.FM - Commercial-Free Indie Rock Radio';
+      document.title = 'Alternative & Indie Rock Radio - HEADY.FM';
     };
   }, [nowPlaying]);
 
@@ -447,7 +447,7 @@ export function HomePageContent({ initialData }: HomePageContentProps) {
               HEADY EXTRATERRESTRIAL RADIO
             </h3>
             <div className="pt-4 text-sm text-white/40">
-              © {new Date().getFullYear()} HEADY Radio. All transmissions received and logged.
+              ©2026 HEADY Radio, a Prospect Media property. All rights reserved.
             </div>
           </div>
         </div>
