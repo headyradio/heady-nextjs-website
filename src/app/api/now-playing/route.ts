@@ -3,13 +3,6 @@ import { createClient } from '@supabase/supabase-js';
 
 const RADIOBOSS_API_URL = 'https://c22.radioboss.fm/api/info/364?key=FZPFZ5DNHQOP';
 
-// Server-side Supabase client for logging transmissions
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-const supabaseServer = supabaseUrl && supabaseKey
-  ? createClient(supabaseUrl, supabaseKey)
-  : null;
-
 // In-memory cache with 5-second TTL (background poller keeps this fresh)
 let cache: {
   data: NowPlayingResponse;
@@ -18,8 +11,43 @@ let cache: {
 
 const CACHE_TTL = 5 * 1000; // 5 seconds
 
+// Server-side Supabase client for logging transmissions
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+const supabaseServer = supabaseUrl && supabaseKey
+  ? createClient(supabaseUrl, supabaseKey)
+  : null;
+
 // Track the last logged track to avoid duplicate inserts
 let lastLoggedTrackKey: string | null = null;
+
+async function logTransmission(track: NowPlayingTrack) {
+  if (!supabaseServer) return;
+  const trackKey = `${track.artist}-${track.title}-${track.play_started_at}`;
+  if (trackKey === lastLoggedTrackKey) return;
+  lastLoggedTrackKey = trackKey;
+  try {
+    const { error } = await supabaseServer.from('transmissions').insert({
+      title: track.title,
+      artist: track.artist,
+      album: track.album || null,
+      play_started_at: track.play_started_at,
+      duration: track.duration || null,
+      album_art_url: track.album_art_url || null,
+      genre: track.genre || null,
+      year: track.year || null,
+      artwork_id: track.artwork_id || null,
+      listeners_count: track.listeners_count || 0,
+    });
+    if (error && error.code !== '23505') {
+      console.error('[RadioBoss] Error logging transmission:', error);
+    } else if (!error) {
+      console.log(`[RadioBoss] Logged: ${track.artist} - ${track.title}`);
+    }
+  } catch (err) {
+    console.error('[RadioBoss] Failed to log transmission:', err);
+  }
+}
 
 export interface NowPlayingTrack {
   id: string;
@@ -127,54 +155,8 @@ async function fetchFromRadioBoss(): Promise<NowPlayingResponse> {
   }
 }
 
-// Log a new transmission to Supabase
-async function logTransmission(track: NowPlayingTrack) {
-  if (!supabaseServer) {
-    console.warn('[RadioBoss Poller] Supabase not configured, skipping transmission log');
-    return;
-  }
-
-  const trackKey = `${track.artist}-${track.title}-${track.play_started_at}`;
-  
-  // Skip if we already logged this exact track instance
-  if (trackKey === lastLoggedTrackKey) return;
-
-  try {
-    const { error } = await supabaseServer
-      .from('transmissions')
-      .insert({
-        title: track.title,
-        artist: track.artist,
-        album: track.album || null,
-        play_started_at: track.play_started_at,
-        duration: track.duration || null,
-        album_art_url: track.album_art_url || null,
-        genre: track.genre || null,
-        year: track.year || null,
-        artwork_id: track.artwork_id || null,
-        listeners_count: track.listeners_count || 0,
-      });
-
-    if (error) {
-      // Ignore duplicate key errors (track already logged)
-      if (error.code === '23505') {
-        console.log(`[RadioBoss Poller] Track already logged: ${track.title}`);
-      } else {
-        console.error('[RadioBoss Poller] Error logging transmission:', error);
-      }
-    } else {
-      console.log(`[RadioBoss Poller] Logged transmission: ${track.artist} - ${track.title}`);
-    }
-    
-    lastLoggedTrackKey = trackKey;
-  } catch (err) {
-    console.error('[RadioBoss Poller] Failed to log transmission:', err);
-  }
-}
-
 // Background poller: automatically refresh the cache every 5 seconds
-// NOTE: On Vercel serverless, this won't persist between cold starts,
-// but the GET handler below handles logging independently.
+// This runs in the Node.js server process, not in the browser.
 let pollerStarted = false;
 
 function startBackgroundPoller() {
@@ -189,11 +171,17 @@ function startBackgroundPoller() {
     console.log(`[RadioBoss Poller] Initial fetch: ${data.nowPlaying?.title || 'no track'}`);
   });
   
-  // Poll every 5 seconds (keeps cache warm for local dev)
+  // Poll every 5 seconds
   setInterval(async () => {
     try {
       const data = await fetchFromRadioBoss();
+      const oldTrack = cache?.data?.nowPlaying?.title;
       cache = { data, timestamp: Date.now() };
+      
+      if (data.nowPlaying && data.nowPlaying.title !== oldTrack) {
+        console.log(`[RadioBoss Poller] Track changed: ${data.nowPlaying.title}`);
+        logTransmission(data.nowPlaying).catch(() => {});
+      }
     } catch (err) {
       console.error('[RadioBoss Poller] Error:', err);
     }
@@ -203,31 +191,34 @@ function startBackgroundPoller() {
 // Start the poller when this module is first loaded
 startBackgroundPoller();
 
-// Force dynamic rendering (no static caching on Vercel)
-export const dynamic = 'force-dynamic';
-
 export async function GET() {
-  // Always fetch fresh data from RadioBoss
+  // If cache is fresh, return it immediately
+  if (cache && Date.now() - cache.timestamp < CACHE_TTL) {
+    return NextResponse.json(cache.data, {
+      headers: {
+        'X-Cache': 'HIT',
+        'Cache-Control': 'public, s-maxage=5, stale-while-revalidate=10',
+      },
+    });
+  }
+
+  // Cache is stale or empty — fetch fresh
   const data = await fetchFromRadioBoss();
-  
   const previousTrack = cache?.data?.nowPlaying?.title;
   
-  // Update cache
   cache = {
     data,
     timestamp: Date.now(),
   };
 
-  // Log to Supabase if track changed (or on first request)
+  // Log to Supabase if track changed (handles Vercel serverless where poller won't persist)
   if (data.nowPlaying && data.nowPlaying.title !== previousTrack) {
-    // Don't await - fire and forget so we don't slow down the response
-    logTransmission(data.nowPlaying).catch(err => {
-      console.error('[Now Playing API] Failed to log transmission:', err);
-    });
+    logTransmission(data.nowPlaying).catch(() => {});
   }
 
   return NextResponse.json(data, {
     headers: {
+      'X-Cache': 'MISS',
       'Cache-Control': 'public, s-maxage=5, stale-while-revalidate=10',
     },
   });
