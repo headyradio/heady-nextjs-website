@@ -105,6 +105,9 @@ export const latestArticlesQuery = groq`*[_type == "newsArticle"] | order(publis
 // Related articles (same category, excluding current article)
 export const relatedArticlesQuery = groq`*[_type == "newsArticle" && category->slug.current == $categorySlug && _id != $currentId] | order(publishedAt desc) [0...3] ${articleProjection}`;
 
+// Fallback: recent articles from any category (excluding current)
+export const recentArticlesQuery = groq`*[_type == "newsArticle" && _id != $currentId] | order(publishedAt desc) [0...3] ${articleProjection}`;
+
 // All categories
 export const allCategoriesQuery = groq`*[_type == "category"] | order(title asc) {
   _id,

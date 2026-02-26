@@ -1,5 +1,5 @@
 import { sanityFetch } from "@/lib/sanity/client";
-import { relatedArticlesQuery } from "@/lib/sanity/queries";
+import { relatedArticlesQuery, recentArticlesQuery } from "@/lib/sanity/queries";
 import { ArticleCard } from "./ArticleCard";
 import type { Article } from "@/lib/sanity/types";
 
@@ -9,11 +9,21 @@ interface RelatedArticlesProps {
 }
 
 export async function RelatedArticles({ categorySlug, currentId }: RelatedArticlesProps) {
-  const articles = await sanityFetch<Article[]>({
+  // Try same-category articles first
+  let articles = await sanityFetch<Article[]>({
     query: relatedArticlesQuery,
     params: { categorySlug, currentId },
     tags: ["articles"],
   });
+
+  // Fall back to recent articles from any category
+  if (!articles || articles.length === 0) {
+    articles = await sanityFetch<Article[]>({
+      query: recentArticlesQuery,
+      params: { currentId },
+      tags: ["articles"],
+    });
+  }
 
   if (!articles || articles.length === 0) return null;
 
