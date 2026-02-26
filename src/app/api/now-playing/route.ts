@@ -1,5 +1,4 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
 
 const RADIOBOSS_API_URL = 'https://c22.radioboss.fm/api/info/364?key=FZPFZ5DNHQOP';
 
@@ -10,44 +9,6 @@ let cache: {
 } | null = null;
 
 const CACHE_TTL = 5 * 1000; // 5 seconds
-
-// Server-side Supabase client for logging transmissions
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-const supabaseServer = supabaseUrl && supabaseKey
-  ? createClient(supabaseUrl, supabaseKey)
-  : null;
-
-// Track the last logged track to avoid duplicate inserts
-let lastLoggedTrackKey: string | null = null;
-
-async function logTransmission(track: NowPlayingTrack) {
-  if (!supabaseServer) return;
-  const trackKey = `${track.artist}-${track.title}-${track.play_started_at}`;
-  if (trackKey === lastLoggedTrackKey) return;
-  lastLoggedTrackKey = trackKey;
-  try {
-    const { error } = await supabaseServer.from('transmissions').insert({
-      title: track.title,
-      artist: track.artist,
-      album: track.album || null,
-      play_started_at: track.play_started_at,
-      duration: track.duration || null,
-      album_art_url: track.album_art_url || null,
-      genre: track.genre || null,
-      year: track.year || null,
-      artwork_id: track.artwork_id || null,
-      listeners_count: track.listeners_count || 0,
-    });
-    if (error && error.code !== '23505') {
-      console.error('[RadioBoss] Error logging transmission:', error);
-    } else if (!error) {
-      console.log(`[RadioBoss] Logged: ${track.artist} - ${track.title}`);
-    }
-  } catch (err) {
-    console.error('[RadioBoss] Failed to log transmission:', err);
-  }
-}
 
 export interface NowPlayingTrack {
   id: string;
@@ -178,9 +139,8 @@ function startBackgroundPoller() {
       const oldTrack = cache?.data?.nowPlaying?.title;
       cache = { data, timestamp: Date.now() };
       
-      if (data.nowPlaying && data.nowPlaying.title !== oldTrack) {
-        console.log(`[RadioBoss Poller] Track changed: ${data.nowPlaying.title}`);
-        logTransmission(data.nowPlaying).catch(() => {});
+      if (data.nowPlaying?.title !== oldTrack) {
+        console.log(`[RadioBoss Poller] Track changed: ${data.nowPlaying?.title || 'none'}`);
       }
     } catch (err) {
       console.error('[RadioBoss Poller] Error:', err);
@@ -202,19 +162,13 @@ export async function GET() {
     });
   }
 
-  // Cache is stale or empty — fetch fresh
+  // Cache is stale or empty — fetch fresh (shouldn't happen often with the poller)
   const data = await fetchFromRadioBoss();
-  const previousTrack = cache?.data?.nowPlaying?.title;
   
   cache = {
     data,
     timestamp: Date.now(),
   };
-
-  // Log to Supabase if track changed (handles Vercel serverless where poller won't persist)
-  if (data.nowPlaying && data.nowPlaying.title !== previousTrack) {
-    logTransmission(data.nowPlaying).catch(() => {});
-  }
 
   return NextResponse.json(data, {
     headers: {

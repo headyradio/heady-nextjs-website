@@ -1,5 +1,4 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { supabase } from '@/integrations/supabase/client';
 import { getInitialNowPlayingFromWindow, getInitialNowPlaying, type InitialNowPlayingData } from '@/lib/getInitialNowPlaying';
 
 const RADIOBOSS_API_URL = '/api/now-playing';
@@ -150,52 +149,8 @@ export const useRadioBoss = (initialServerData?: InitialServerData) => {
     return !!windowData || !!cachedData;
   });
   
-  // Track logged transmissions with timestamps to avoid re-logging
-  const loggedTransmissionsRef = useRef<Map<string, number>>(new Map());
+  // Track data changes to avoid unnecessary re-renders
   const lastDataRef = useRef<string | null>(null);
-
-  const logTransmission = async (transmission: Transmission) => {
-    const songKey = `${transmission.title}-${transmission.artist}`;
-    const now = Date.now();
-    const lastLoggedTime = loggedTransmissionsRef.current.get(songKey);
-
-    // Skip if this song was logged within the last 3 minutes
-    if (lastLoggedTime && (now - lastLoggedTime) < 3 * 60 * 1000) {
-      return;
-    }
-
-    try {
-      const { error } = await supabase.from('transmissions').insert({
-        title: transmission.title,
-        artist: transmission.artist,
-        album: transmission.album || null,
-        play_started_at: transmission.play_started_at,
-        duration: transmission.duration || null,
-        album_art_url: transmission.album_art_url || null,
-        genre: transmission.genre || null,
-        year: transmission.year || null,
-        artwork_id: transmission.artwork_id || null,
-        listeners_count: transmission.listeners_count || 0,
-      });
-
-      if (error && error.code !== '23505') {
-        console.error('Failed to log transmission:', error);
-      } else {
-        loggedTransmissionsRef.current.set(songKey, now);
-        console.log('Logged transmission:', transmission.title);
-      }
-
-      // Clean up old entries (remove entries older than 15 minutes)
-      const fifteenMinutesAgo = now - 15 * 60 * 1000;
-      for (const [key, time] of loggedTransmissionsRef.current.entries()) {
-        if (time < fifteenMinutesAgo) {
-          loggedTransmissionsRef.current.delete(key);
-        }
-      }
-    } catch (err) {
-      console.error('Failed to log transmission:', err);
-    }
-  };
 
   const fetchRadioData = useCallback(async () => {
     try {
@@ -224,19 +179,6 @@ export const useRadioBoss = (initialServerData?: InitialServerData) => {
 
       // Use recent tracks from the API (the server-side poller keeps this fresh)
       const recentTracks: Transmission[] = (apiData.recentTracks || []) as Transmission[];
-
-      // Log all new transmissions to Supabase
-      const allTracks = [nowPlaying, ...recentTracks].filter(Boolean) as Transmission[];
-      const now = Date.now();
-      const newTracks = allTracks.filter(track => {
-        const songKey = `${track.title}-${track.artist}`;
-        const lastLoggedTime = loggedTransmissionsRef.current.get(songKey);
-        return !lastLoggedTime || (now - lastLoggedTime) >= 3 * 60 * 1000;
-      });
-      
-      if (newTracks.length > 0) {
-        await Promise.all(newTracks.map(track => logTransmission(track)));
-      }
 
       const newData = {
         nowPlaying,
