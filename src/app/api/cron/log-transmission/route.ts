@@ -78,13 +78,20 @@ export async function GET(request: Request) {
       listeners_count: number;
     }> = [];
 
-    // Add current track
+    // Add current track - use the timestamp from recent[0] if it matches,
+    // since LASTPLAYED from RadioBoss can be days old and stale
     if (currentTrack?.TITLE && currentTrack?.ARTIST) {
+      const recentTracks: RadioBossTrack[] = data.recent || [];
+      const matchingRecent = recentTracks.find(
+        t => t.tracktitle === currentTrack.TITLE && t.trackartist === currentTrack.ARTIST
+      );
+      const playStartedAt = matchingRecent?.started || currentTrack.LASTPLAYED || new Date().toISOString();
+      
       tracksToLog.push({
         title: currentTrack.TITLE,
         artist: currentTrack.ARTIST,
         album: currentTrack.ALBUM || null,
-        play_started_at: currentTrack.LASTPLAYED || new Date().toISOString(),
+        play_started_at: playStartedAt,
         duration: currentTrack.DURATION || null,
         album_art_url: artworkUrl,
         genre: currentTrack.GENRE || null,
