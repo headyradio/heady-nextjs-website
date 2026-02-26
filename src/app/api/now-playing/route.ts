@@ -173,7 +173,8 @@ async function logTransmission(track: NowPlayingTrack) {
 }
 
 // Background poller: automatically refresh the cache every 5 seconds
-// This runs in the Node.js server process, not in the browser.
+// NOTE: On Vercel serverless, this won't persist between cold starts,
+// but the GET handler below handles logging independently.
 let pollerStarted = false;
 
 function startBackgroundPoller() {
@@ -186,24 +187,13 @@ function startBackgroundPoller() {
   fetchFromRadioBoss().then(data => {
     cache = { data, timestamp: Date.now() };
     console.log(`[RadioBoss Poller] Initial fetch: ${data.nowPlaying?.title || 'no track'}`);
-    // Log the initial track
-    if (data.nowPlaying) {
-      logTransmission(data.nowPlaying);
-    }
   });
   
-  // Poll every 5 seconds
+  // Poll every 5 seconds (keeps cache warm for local dev)
   setInterval(async () => {
     try {
       const data = await fetchFromRadioBoss();
-      const oldTrack = cache?.data?.nowPlaying?.title;
       cache = { data, timestamp: Date.now() };
-      
-      if (data.nowPlaying && data.nowPlaying.title !== oldTrack) {
-        console.log(`[RadioBoss Poller] Track changed: ${data.nowPlaying.title}`);
-        // Log the new track to Supabase
-        await logTransmission(data.nowPlaying);
-      }
     } catch (err) {
       console.error('[RadioBoss Poller] Error:', err);
     }
@@ -213,28 +203,31 @@ function startBackgroundPoller() {
 // Start the poller when this module is first loaded
 startBackgroundPoller();
 
-export async function GET() {
-  // If cache is fresh, return it immediately
-  if (cache && Date.now() - cache.timestamp < CACHE_TTL) {
-    return NextResponse.json(cache.data, {
-      headers: {
-        'X-Cache': 'HIT',
-        'Cache-Control': 'public, s-maxage=5, stale-while-revalidate=10',
-      },
-    });
-  }
+// Force dynamic rendering (no static caching on Vercel)
+export const dynamic = 'force-dynamic';
 
-  // Cache is stale or empty — fetch fresh (shouldn't happen often with the poller)
+export async function GET() {
+  // Always fetch fresh data from RadioBoss
   const data = await fetchFromRadioBoss();
   
+  const previousTrack = cache?.data?.nowPlaying?.title;
+  
+  // Update cache
   cache = {
     data,
     timestamp: Date.now(),
   };
 
+  // Log to Supabase if track changed (or on first request)
+  if (data.nowPlaying && data.nowPlaying.title !== previousTrack) {
+    // Don't await - fire and forget so we don't slow down the response
+    logTransmission(data.nowPlaying).catch(err => {
+      console.error('[Now Playing API] Failed to log transmission:', err);
+    });
+  }
+
   return NextResponse.json(data, {
     headers: {
-      'X-Cache': 'MISS',
       'Cache-Control': 'public, s-maxage=5, stale-while-revalidate=10',
     },
   });
