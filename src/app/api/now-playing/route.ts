@@ -1,6 +1,14 @@
 import { NextResponse } from 'next/server';
+import { createClient } from '@supabase/supabase-js';
 
 const RADIOBOSS_API_URL = 'https://c22.radioboss.fm/api/info/364?key=FZPFZ5DNHQOP';
+
+// Server-side Supabase client for logging transmissions
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+const supabaseServer = supabaseUrl && supabaseKey
+  ? createClient(supabaseUrl, supabaseKey)
+  : null;
 
 // In-memory cache with 5-second TTL (background poller keeps this fresh)
 let cache: {
@@ -9,6 +17,9 @@ let cache: {
 } | null = null;
 
 const CACHE_TTL = 5 * 1000; // 5 seconds
+
+// Track the last logged track to avoid duplicate inserts
+let lastLoggedTrackKey: string | null = null;
 
 export interface NowPlayingTrack {
   id: string;
@@ -116,6 +127,51 @@ async function fetchFromRadioBoss(): Promise<NowPlayingResponse> {
   }
 }
 
+// Log a new transmission to Supabase
+async function logTransmission(track: NowPlayingTrack) {
+  if (!supabaseServer) {
+    console.warn('[RadioBoss Poller] Supabase not configured, skipping transmission log');
+    return;
+  }
+
+  const trackKey = `${track.artist}-${track.title}-${track.play_started_at}`;
+  
+  // Skip if we already logged this exact track instance
+  if (trackKey === lastLoggedTrackKey) return;
+
+  try {
+    const { error } = await supabaseServer
+      .from('transmissions')
+      .insert({
+        title: track.title,
+        artist: track.artist,
+        album: track.album || null,
+        play_started_at: track.play_started_at,
+        duration: track.duration || null,
+        album_art_url: track.album_art_url || null,
+        genre: track.genre || null,
+        year: track.year || null,
+        artwork_id: track.artwork_id || null,
+        listeners_count: track.listeners_count || 0,
+      });
+
+    if (error) {
+      // Ignore duplicate key errors (track already logged)
+      if (error.code === '23505') {
+        console.log(`[RadioBoss Poller] Track already logged: ${track.title}`);
+      } else {
+        console.error('[RadioBoss Poller] Error logging transmission:', error);
+      }
+    } else {
+      console.log(`[RadioBoss Poller] Logged transmission: ${track.artist} - ${track.title}`);
+    }
+    
+    lastLoggedTrackKey = trackKey;
+  } catch (err) {
+    console.error('[RadioBoss Poller] Failed to log transmission:', err);
+  }
+}
+
 // Background poller: automatically refresh the cache every 5 seconds
 // This runs in the Node.js server process, not in the browser.
 let pollerStarted = false;
@@ -130,6 +186,10 @@ function startBackgroundPoller() {
   fetchFromRadioBoss().then(data => {
     cache = { data, timestamp: Date.now() };
     console.log(`[RadioBoss Poller] Initial fetch: ${data.nowPlaying?.title || 'no track'}`);
+    // Log the initial track
+    if (data.nowPlaying) {
+      logTransmission(data.nowPlaying);
+    }
   });
   
   // Poll every 5 seconds
@@ -139,8 +199,10 @@ function startBackgroundPoller() {
       const oldTrack = cache?.data?.nowPlaying?.title;
       cache = { data, timestamp: Date.now() };
       
-      if (data.nowPlaying?.title !== oldTrack) {
-        console.log(`[RadioBoss Poller] Track changed: ${data.nowPlaying?.title || 'none'}`);
+      if (data.nowPlaying && data.nowPlaying.title !== oldTrack) {
+        console.log(`[RadioBoss Poller] Track changed: ${data.nowPlaying.title}`);
+        // Log the new track to Supabase
+        await logTransmission(data.nowPlaying);
       }
     } catch (err) {
       console.error('[RadioBoss Poller] Error:', err);
