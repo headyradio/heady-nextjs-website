@@ -25,6 +25,7 @@ import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
 import { RefreshCw } from 'lucide-react';
+import { FeaturedArticlesClient } from '@/components/FeaturedArticlesClient';
 
 interface HomePageContentProps {
   initialData?: InitialServerData;
@@ -387,6 +388,13 @@ export function HomePageContent({ initialData }: HomePageContentProps) {
         </div>
       </section>
 
+      {/* ===== SECTION 2.5: HEADYZINE ===== */}
+      <section className="hidden md:block py-4 lg:py-6">
+        <div className="px-4">
+          <FeaturedArticlesClient />
+        </div>
+      </section>
+
       {/* ===== SECTION 3: FEATURED + SUPPORT (75/25 split) ===== */}
       <section className="hidden md:block py-4 lg:py-6">
         <div className="px-4">
@@ -438,6 +446,8 @@ export function HomePageContent({ initialData }: HomePageContentProps) {
           </div>
         </div>
       </section>
+
+
 
       {/* Footer - Desktop Only */}
       <footer className="hidden md:block border-t border-white/10 py-12 mt-8">

@@ -1,11 +1,8 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { supabase } from '@/integrations/supabase/client';
-import { toZonedTime, fromZonedTime } from 'date-fns-tz';
 import { getInitialNowPlayingFromWindow, getInitialNowPlaying, type InitialNowPlayingData } from '@/lib/getInitialNowPlaying';
 
-const RADIOBOSS_API_URL = 'https://c22.radioboss.fm/api/info/364?key=FZPFZ5DNHQOP';
-const POLL_INTERVAL = 120000; // 2 minutes
-const SMART_POLL_INTERVAL = 30000; // 30 seconds for smart polling
+const RADIOBOSS_API_URL = '/api/now-playing';
+const SMART_POLL_INTERVAL = 10000; // 10 seconds (server cache is 5s, this is fast enough)
 const CACHE_KEY = 'heady_radio_cache';
 
 // Load cached data from localStorage
@@ -153,50 +150,8 @@ export const useRadioBoss = (initialServerData?: InitialServerData) => {
   });
   
   // Track logged transmissions with timestamps to avoid re-logging
-  const loggedTransmissionsRef = useRef<Map<string, number>>(new Map());
+  // (Client-side logging removed, should be handled by server/Edge API)
   const lastDataRef = useRef<string | null>(null);
-
-  const logTransmission = async (transmission: Transmission) => {
-    // Create a unique key based on title and artist only
-    const songKey = `${transmission.title}-${transmission.artist}`;
-    const now = Date.now();
-    const lastLoggedTime = loggedTransmissionsRef.current.get(songKey);
-
-    // Skip if this song was logged within the last 3 minutes
-    if (lastLoggedTime && (now - lastLoggedTime) < 3 * 60 * 1000) {
-      return;
-    }
-
-    try {
-      // The RadioBoss API returns timestamps like "2025-10-01 13:45:50" in Eastern Time
-      // Interpret this as Eastern Time and convert to UTC
-      const easternDate = fromZonedTime(transmission.play_started_at, 'America/New_York');
-      
-      const transmissionWithUTC = {
-        ...transmission,
-        play_started_at: easternDate.toISOString()
-      };
-      
-      await supabase.functions.invoke('log-transmission', {
-        body: { transmission: transmissionWithUTC }
-      });
-      
-      // Mark as logged with current timestamp
-      loggedTransmissionsRef.current.set(songKey, now);
-      
-      // Clean up old entries (remove entries older than 15 minutes)
-      const fifteenMinutesAgo = now - 15 * 60 * 1000;
-      for (const [key, time] of loggedTransmissionsRef.current.entries()) {
-        if (time < fifteenMinutesAgo) {
-          loggedTransmissionsRef.current.delete(key);
-        }
-      }
-      
-      console.log('Logged transmission to database:', transmission.title);
-    } catch (err) {
-      console.error('Failed to log transmission:', err);
-    }
-  };
 
   const fetchRadioData = useCallback(async () => {
     try {
@@ -207,10 +162,9 @@ export const useRadioBoss = (initialServerData?: InitialServerData) => {
 
       const apiData = await response.json();
       
-      // Quick check if data actually changed
+      // Quick check if data actually changed based on our Next.js API shape
       const dataHash = JSON.stringify({
-        current: apiData.currenttrack_info?.['@attributes']?.TITLE,
-        recent: apiData.recent?.[0]?.tracktitle
+        current: apiData.nowPlaying?.title,
       });
       
       if (lastDataRef.current === dataHash && !isLoading) {
@@ -222,59 +176,17 @@ export const useRadioBoss = (initialServerData?: InitialServerData) => {
       setIsLoading(true);
       setError(null);
 
-      // Parse current track
-      const currentTrack = apiData.currenttrack_info?.['@attributes'];
-      const nowPlaying: Transmission | null = currentTrack ? {
-        id: `current-${currentTrack.TITLE}-${currentTrack.LASTPLAYED}`,
-        title: currentTrack.TITLE || 'Unknown',
-        artist: currentTrack.ARTIST || 'Unknown Artist',
-        album: currentTrack.ALBUM || null,
-        play_started_at: currentTrack.LASTPLAYED || new Date().toISOString(),
-        duration: currentTrack.DURATION || null,
-        album_art_url: apiData.links?.artwork || null,
-        genre: currentTrack.GENRE || null,
-        year: currentTrack.YEAR || null,
-        artwork_id: null,
-        listeners_count: apiData.listeners || 0,
-      } : null;
+      const nowPlaying = apiData.nowPlaying as Transmission | null;
 
-      // Parse recent tracks
-      const recentTracks: Transmission[] = (apiData.recent || []).map((track: any) => ({
-        id: `recent-${track.artworkid}-${track.started}`,
-        title: track.tracktitle || 'Unknown',
-        artist: track.trackartist || 'Unknown Artist',
-        album: null,
-        play_started_at: track.started || new Date().toISOString(),
-        duration: null,
-        album_art_url: track.artworkid 
-          ? `https://c22.radioboss.fm/w/artwork/${track.artworkid}/364.jpg`
-          : null,
-        genre: null,
-        year: null,
-        artwork_id: track.artworkid || null,
-        listeners_count: apiData.listeners || 0,
-      }));
-
-      // Batch log all transmissions in parallel
-      const allTracks = [nowPlaying, ...recentTracks].filter(Boolean) as Transmission[];
-      const now = Date.now();
-      const newTracks = allTracks.filter(track => {
-        const songKey = `${track.title}-${track.artist}`;
-        const lastLoggedTime = loggedTransmissionsRef.current.get(songKey);
-        // Only include if not logged in the last 3 minutes
-        return !lastLoggedTime || (now - lastLoggedTime) >= 3 * 60 * 1000;
-      });
-      
-      if (newTracks.length > 0) {
-        await Promise.all(newTracks.map(track => logTransmission(track)));
-      }
+      // Use recent tracks from the API (the server-side poller keeps this fresh)
+      const recentTracks: Transmission[] = (apiData.recentTracks || []) as Transmission[];
 
       const newData = {
         nowPlaying,
         recentTracks,
-        stationName: apiData.station_name || 'E.T. Radio',
-        listenersCount: apiData.listeners || 0,
-        isLive: !!nowPlaying,
+        stationName: apiData.stationName || 'E.T. Radio',
+        listenersCount: apiData.listenersCount || 0,
+        isLive: apiData.isLive ?? !!nowPlaying,
         lastUpdate: new Date(),
       };
       

@@ -23,6 +23,14 @@ const nextConfig: NextConfig = {
         protocol: 'https',
         hostname: 'upload.wikimedia.org',
       },
+      {
+        protocol: 'https',
+        hostname: 'cdn.sanity.io',
+      },
+      {
+        protocol: 'https',
+        hostname: 'c22.radioboss.fm',
+      },
     ],
   },
 };

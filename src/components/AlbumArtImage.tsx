@@ -27,7 +27,6 @@ export const AlbumArtImage = ({
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [showFallback, setShowFallback] = useState(false);
-  const [timestamp, setTimestamp] = useState(Date.now()); // Timestamp-based cache busting for Safari
   const hasFetchedRef = useRef(false);
   const loadTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -37,7 +36,6 @@ export const AlbumArtImage = ({
     setIsLoading(true);
     setShowFallback(false);
     setImageUrl(null);
-    setTimestamp(Date.now()); // Generate new timestamp for Safari cache busting
 
     const fetchAlbumArt = async () => {
       // If no artist/title, just show fallback
@@ -87,9 +85,7 @@ export const AlbumArtImage = ({
         img.onload = () => {
           loaded = true;
           clearTimeout(loadTimeout);
-          // Add timestamp to break Safari cache
-          const cacheBustedUrl = url.includes('?') ? `${url}&_cb=${Date.now()}` : `${url}?_cb=${Date.now()}`;
-          setImageUrl(cacheBustedUrl);
+          setImageUrl(url);
           setIsLoading(false);
         };
 
@@ -117,9 +113,7 @@ export const AlbumArtImage = ({
         });
         
         if (!error && data?.url) {
-          // Add timestamp to break Safari cache
-          const cacheBustedUrl = data.url.includes('?') ? `${data.url}&_cb=${Date.now()}` : `${data.url}?_cb=${Date.now()}`;
-          setImageUrl(cacheBustedUrl);
+          setImageUrl(data.url);
         } else {
           setShowFallback(true);
         }
@@ -166,11 +160,10 @@ export const AlbumArtImage = ({
     );
   }
 
-  // Show the fetched image with Safari-optimized cache busting
   return (
     <div className="relative w-full h-full">
       <NextImage
-        key={`${artist}-${title}-${timestamp}`}
+        key={imageUrl}
         src={imageUrl}
         alt={alt || 'Album artwork'}
         fill
@@ -180,7 +173,7 @@ export const AlbumArtImage = ({
           console.log('Image load error, showing fallback');
           setShowFallback(true);
         }}
-        unoptimized={imageUrl.includes('radioboss.fm')} // RadioBoss might not support optimization or headers
+        unoptimized={false} // Use Next.js CDN caching
       />
     </div>
   );

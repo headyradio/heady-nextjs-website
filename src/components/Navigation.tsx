@@ -1,3 +1,5 @@
+"use client";
+
 import * as React from 'react';
 import { Play, Square, Volume2, VolumeX, Menu, X, Heart, User, LogOut, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -55,6 +57,15 @@ const Navigation = () => {
           <div className="grid grid-cols-3 h-14 items-center">
             {/* Left: Navigation Links */}
             <div className="hidden md:flex items-center gap-1 justify-start">
+              <Link href="/headyzine">
+                <button 
+                  className={`px-4 py-2 text-sm font-medium transition-colors hover:text-white cursor-pointer ${
+                    isActiveLink('/headyzine') ? 'text-white' : 'text-white/70'
+                  }`}
+                >
+                  Zine
+                </button>
+              </Link>
               <Link href="/playlist">
                 <button 
                   className={`px-4 py-2 text-sm font-medium transition-colors hover:text-white cursor-pointer ${
@@ -82,6 +93,7 @@ const Navigation = () => {
                   Shows
                 </button>
               </Link>
+
               <button 
                 className="px-4 py-2 text-sm font-medium text-white/70 transition-colors hover:text-white cursor-pointer"
                 onClick={() => {
@@ -393,6 +405,11 @@ const Navigation = () => {
 
             {/* Nav Links - Mobile */}
             <div className="grid grid-cols-2 gap-2">
+              <Link href="/headyzine" onClick={() => setMobileMenuOpen(false)}>
+                <Button variant="outline" className="w-full h-10 text-sm bg-white/5 border-white/20 text-white hover:bg-white/10">
+                  Zine
+                </Button>
+              </Link>
               <Link href="/playlist" onClick={() => setMobileMenuOpen(false)}>
                 <Button variant="outline" className="w-full h-10 text-sm bg-white/5 border-white/20 text-white hover:bg-white/10">
                   Playlist
@@ -406,6 +423,11 @@ const Navigation = () => {
               <Link href="/shows" onClick={() => setMobileMenuOpen(false)}>
                 <Button variant="outline" className="w-full h-10 text-sm bg-white/5 border-white/20 text-white hover:bg-white/10">
                   Shows
+                </Button>
+              </Link>
+              <Link href="/headyzine" onClick={() => setMobileMenuOpen(false)}>
+                <Button variant="outline" className="w-full h-10 text-sm bg-white/5 border-white/20 text-white hover:bg-white/10">
+                  Zine
                 </Button>
               </Link>
               <Button 

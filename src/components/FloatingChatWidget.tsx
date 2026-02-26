@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
+import { usePathname } from 'next/navigation';
 import { X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { LiveChat } from '@/components/LiveChat';
@@ -8,6 +9,7 @@ import { LiveChat } from '@/components/LiveChat';
 type WidgetState = 'minimized' | 'active';
 
 export const FloatingChatWidget = () => {
+  const pathname = usePathname();
   const [state, setState] = useState<WidgetState>('minimized');
   const [hasInteracted, setHasInteracted] = useState(() => {
     if (typeof window !== 'undefined') {
@@ -34,6 +36,11 @@ export const FloatingChatWidget = () => {
     window.addEventListener('open-live-chat', handleOpenLiveChat);
     return () => window.removeEventListener('open-live-chat', handleOpenLiveChat);
   }, []);
+
+  // Don't render the floating widget inside the Sanity CMS backend
+  if (pathname?.startsWith('/studio')) {
+    return null;
+  }
 
   if (state === 'minimized') {
     return (
