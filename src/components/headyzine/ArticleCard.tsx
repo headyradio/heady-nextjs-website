@@ -12,7 +12,9 @@ interface ArticleCardProps {
 
 export function ArticleCard({ article, featured = false }: ArticleCardProps) {
   const imageUrl = article.featuredImage
-    ? urlFor(article.featuredImage).width(featured ? 800 : 600).height(featured ? 450 : 340).url()
+    ? featured
+      ? urlFor(article.featuredImage).width(800).url()
+      : urlFor(article.featuredImage).width(600).height(340).url()
     : null;
 
   return (
@@ -35,7 +37,7 @@ export function ArticleCard({ article, featured = false }: ArticleCardProps) {
               src={imageUrl}
               alt={article.featuredImage?.alt || article.title}
               fill
-              className="object-cover group-hover:scale-105 transition-transform duration-500"
+              className={`${featured ? "object-contain" : "object-cover"} group-hover:scale-105 transition-transform duration-500`}
               sizes={featured ? "(max-width: 768px) 100vw, 50vw" : "(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"}
             />
           ) : (
