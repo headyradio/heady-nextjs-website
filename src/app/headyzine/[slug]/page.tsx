@@ -14,6 +14,7 @@ import { ArticleHero } from "@/components/headyzine/ArticleHero";
 import { ArticleBody } from "@/components/headyzine/ArticleBody";
 import { ArticleMeta } from "@/components/headyzine/ArticleMeta";
 import { RelatedArticles } from "@/components/headyzine/RelatedArticles";
+import { TableOfContents } from "@/components/headyzine/TableOfContents";
 import type { Article } from "@/lib/sanity/types";
 
 interface ArticlePageProps {
@@ -163,9 +164,16 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
 
       {/* Article Content */}
       <div className="container mx-auto px-4 pb-8 max-w-6xl">
-        <article className="flex flex-col items-center">
+        <div className="flex gap-10">
+          {/* TOC Sidebar — hidden on mobile */}
+          {article.body && (
+            <aside className="hidden lg:block w-56 shrink-0">
+              <TableOfContents body={article.body} />
+            </aside>
+          )}
+
           {/* Article Body */}
-          <div className="w-full max-w-3xl">
+          <article className="min-w-0 flex-1 max-w-3xl mx-auto">
             {article.body && <ArticleBody body={article.body} />}
 
             {/* Tags */}
@@ -183,8 +191,8 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
                 </div>
               </div>
             )}
-          </div>
-        </article>
+          </article>
+        </div>
       </div>
 
       {/* Related Articles */}
