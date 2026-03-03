@@ -111,7 +111,7 @@ export const relatedArticlesQuery = groq`*[_type == "newsArticle" && defined(slu
 export const recentArticlesQuery = groq`*[_type == "newsArticle" && defined(slug.current) && _id != $currentId] | order(publishedAt desc) [0...3] ${articleProjection}`;
 
 // All categories
-export const allCategoriesQuery = groq`*[_type == "category"] | order(title asc) {
+export const allCategoriesQuery = groq`*[_type == "category" && defined(slug.current)] | order(title asc) {
   _id,
   title,
   slug,
@@ -119,7 +119,7 @@ export const allCategoriesQuery = groq`*[_type == "category"] | order(title asc)
 }`;
 
 // All tags
-export const allTagsQuery = groq`*[_type == "tag"] | order(title asc) {
+export const allTagsQuery = groq`*[_type == "tag" && defined(slug.current)] | order(title asc) {
   _id,
   title,
   slug

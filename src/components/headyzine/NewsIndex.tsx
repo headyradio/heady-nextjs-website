@@ -107,7 +107,7 @@ export function NewsIndex({
               >
                 All
               </button>
-              {categories.map((cat) => (
+              {categories.filter((cat) => cat.slug?.current).map((cat) => (
                 <button
                   key={cat._id}
                   onClick={() => handleCategoryClick(cat.slug.current)}
@@ -126,7 +126,7 @@ export function NewsIndex({
           {/* Tags */}
           {tags.length > 0 && (
             <div className="flex flex-wrap gap-2">
-              {tags.map((tag) => (
+              {tags.filter((tag) => tag.slug?.current).map((tag) => (
                 <button
                   key={tag._id}
                   onClick={() => handleTagClick(tag.slug.current)}
