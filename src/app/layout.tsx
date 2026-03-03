@@ -1,9 +1,12 @@
 import type { Metadata } from "next";
+import Script from "next/script";
 import "./globals.css";
 import { Providers } from "./providers";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/react";
 import { FloatingChatWidget } from "@/components/FloatingChatWidget";
+import { CookieConsentBanner } from "@/components/CookieConsentBanner";
+import { GoogleAnalytics } from "@/components/GoogleAnalytics";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://heady.fm"),
@@ -64,11 +67,30 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        {/* GA Consent Mode v2 — must run synchronously BEFORE any GA script loads.
+            All signals default to denied; no cookies are set until user accepts. */}
+        <Script id="gtag-consent-default" strategy="beforeInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('consent', 'default', {
+              analytics_storage: 'denied',
+              ad_storage: 'denied',
+              ad_user_data: 'denied',
+              ad_personalization: 'denied',
+              wait_for_update: 500
+            });
+          `}
+        </Script>
+      </head>
       <body className="antialiased">
         <Providers>
           {children}
           <FloatingChatWidget />
+          <CookieConsentBanner />
         </Providers>
+        <GoogleAnalytics />
         <Analytics />
         <SpeedInsights />
       </body>
