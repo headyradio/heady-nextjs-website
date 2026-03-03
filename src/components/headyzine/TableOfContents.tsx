@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { PortableTextBlock } from "@/lib/sanity/types";
 
 interface TOCItem {
@@ -36,7 +36,7 @@ function extractHeadings(body: PortableTextBlock[]): TOCItem[] {
 }
 
 export function TableOfContents({ body }: TableOfContentsProps) {
-  const headings = extractHeadings(body);
+  const headings = useMemo(() => extractHeadings(body), [body]);
   const [activeId, setActiveId] = useState<string>("");
 
   useEffect(() => {
@@ -66,7 +66,8 @@ export function TableOfContents({ body }: TableOfContentsProps) {
   const handleClick = (id: string) => {
     const el = document.getElementById(id);
     if (el) {
-      el.scrollIntoView({ behavior: "smooth" });
+      const top = el.getBoundingClientRect().top + window.scrollY - 96;
+      window.scrollTo({ top, behavior: "smooth" });
     }
   };
 
