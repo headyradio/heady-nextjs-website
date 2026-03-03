@@ -19,11 +19,14 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
+  // Only fetch songs that haven't been searched yet (tidal_track_id IS NULL means never attempted)
+  // Songs that were searched but not found are marked tidal_track_id = 'SEARCHED'
   const { data: songs, error } = await supabase
     .from('songs')
     .select('id, artist, title')
     .is('album_art_url', null)
-    .order('created_at', { ascending: false })
+    .is('tidal_track_id', null)
+    .order('created_at', { ascending: true })
     .limit(25);
 
   if (error) {
@@ -53,9 +56,12 @@ export async function GET(request: Request) {
 
         results.push({ song: `${song.artist} - ${song.title}`, status: 'found' });
       } else {
-        // Mark as attempted so we don't retry endlessly — set a placeholder
-        // that will be skipped by the "album_art_url IS NULL" filter
-        // Actually, leave as null so it can retry when TIDAL catalog updates
+        // Mark as searched (not found) so this song is skipped on future runs.
+        // tidal_track_id = 'SEARCHED' excludes it from the IS NULL filter above.
+        await supabase
+          .from('songs')
+          .update({ tidal_track_id: 'SEARCHED', updated_at: new Date().toISOString() })
+          .eq('id', song.id);
         results.push({ song: `${song.artist} - ${song.title}`, status: 'not_found' });
       }
     } catch (err) {
@@ -63,11 +69,12 @@ export async function GET(request: Request) {
     }
   }
 
-  // Count remaining songs without artwork
+  // Count songs still needing a search (no artwork AND never searched)
   const { count } = await supabase
     .from('songs')
     .select('id', { count: 'exact', head: true })
-    .is('album_art_url', null);
+    .is('album_art_url', null)
+    .is('tidal_track_id', null);
 
   return NextResponse.json({
     processed: results.length,
