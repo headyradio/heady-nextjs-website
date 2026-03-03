@@ -6,6 +6,23 @@ interface ArticleBodyProps {
   body: PortableTextBlock[];
 }
 
+function getHeadingId(block: PortableTextBlock | undefined): string | undefined {
+  if (!block || !Array.isArray((block as any).children)) return undefined;
+
+  const text =
+    (block as any).children
+      .filter((child: any) => child?._type === "span")
+      .map((child: any) => child.text || "")
+      .join("") || "";
+
+  if (!text) return undefined;
+
+  return text
+    .toLowerCase()
+    .replace(/\s+/g, "-")
+    .replace(/[^\w-]/g, "");
+}
+
 const portableTextComponents: Partial<PortableTextReactComponents> = {
   types: {
     image: ({ value }: { value: { asset?: { _ref?: string; _id?: string }; alt?: string } }) => (
@@ -13,17 +30,17 @@ const portableTextComponents: Partial<PortableTextReactComponents> = {
     ),
   },
   block: {
-    h2: ({ children }) => (
+    h2: ({ children, value }) => (
       <h2
-        id={typeof children === "string" ? children.toString().toLowerCase().replace(/\s+/g, "-").replace(/[^\w-]/g, "") : undefined}
+        id={getHeadingId(value as PortableTextBlock)}
         className="text-2xl md:text-3xl font-black text-white mt-12 mb-4 tracking-tight scroll-mt-24"
       >
         {children}
       </h2>
     ),
-    h3: ({ children }) => (
+    h3: ({ children, value }) => (
       <h3
-        id={typeof children === "string" ? children.toString().toLowerCase().replace(/\s+/g, "-").replace(/[^\w-]/g, "") : undefined}
+        id={getHeadingId(value as PortableTextBlock)}
         className="text-xl md:text-2xl font-bold text-white mt-10 mb-3 tracking-tight scroll-mt-24"
       >
         {children}
