@@ -1,6 +1,5 @@
-import Image from "next/image";
 import { PortableText, type PortableTextReactComponents } from "@portabletext/react";
-import { urlFor } from "@/lib/sanity/client";
+import { LightboxImage } from "./LightboxImage";
 import type { PortableTextBlock } from "@/lib/sanity/types";
 
 interface ArticleBodyProps {
@@ -9,28 +8,9 @@ interface ArticleBodyProps {
 
 const portableTextComponents: Partial<PortableTextReactComponents> = {
   types: {
-    image: ({ value }: { value: { asset?: { _ref?: string, _id?: string }; alt?: string } }) => {
-      // The GROQ query expands the asset, so it might have _id instead of _ref
-      if (!value?.asset) return null;
-      return (
-        <figure className="my-8 -mx-4 md:mx-0">
-          <div className="relative w-full aspect-video rounded-xl overflow-hidden">
-            <Image
-              src={urlFor(value).width(1200).height(675).url()}
-              alt={value.alt || "Article image"}
-              fill
-              className="object-cover"
-              sizes="(max-width: 768px) 100vw, 800px"
-            />
-          </div>
-          {value.alt && (
-            <figcaption className="text-center text-white/40 text-sm mt-3 italic">
-              {value.alt}
-            </figcaption>
-          )}
-        </figure>
-      );
-    },
+    image: ({ value }: { value: { asset?: { _ref?: string; _id?: string }; alt?: string } }) => (
+      <LightboxImage value={value} />
+    ),
   },
   block: {
     h2: ({ children }) => (

@@ -18,7 +18,7 @@ export function ArticleCard({ article, featured = false }: ArticleCardProps) {
     : null;
 
   return (
-    <Link href={`/headyzine/${article.slug.current}`} className="group block">
+    <Link href={`/headyzine/${article.slug?.current ?? ''}`} className="group block">
       <article
         className={`bg-white/5 border border-white/10 rounded-2xl overflow-hidden hover:border-[hsl(150,55%,35%)]/50 transition-all duration-300 h-full flex flex-col ${
           featured ? "md:flex-row" : ""
