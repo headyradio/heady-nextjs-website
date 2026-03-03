@@ -117,6 +117,11 @@ export async function GET(request: Request) {
     }
 
     // Add recent tracks (convert Eastern Time to UTC)
+    // NOTE: RadioBoss artwork data is unreliable for recent tracks — both the
+    // artwork URL and artworkid often correspond to the *current* track rather
+    // than the actual recent track. We null out both album_art_url and artwork_id
+    // so AlbumArtImage falls through to the album-art edge function which
+    // looks up the correct art by artist+title.
     for (const track of recentTracks) {
       if (track.tracktitle && track.trackartist) {
         tracksToLog.push({
@@ -125,12 +130,10 @@ export async function GET(request: Request) {
           album: null,
           play_started_at: track.started ? easternToUtc(track.started) : new Date().toISOString(),
           duration: null,
-          album_art_url: track.artworkid
-            ? `https://c22.radioboss.fm/w/artwork/${track.artworkid}/364.jpg`
-            : null,
+          album_art_url: null,
           genre: null,
           year: null,
-          artwork_id: track.artworkid || null,
+          artwork_id: null,
           listeners_count: listeners,
         });
       }
