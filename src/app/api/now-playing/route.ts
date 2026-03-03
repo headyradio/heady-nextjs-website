@@ -78,6 +78,10 @@ async function fetchFromRadioBoss(): Promise<NowPlayingResponse> {
     } : null;
 
     // Parse recent tracks
+    // NOTE: RadioBoss artwork URLs are unreliable for recent tracks — they often
+    // serve the current track's artwork regardless of artworkid. We set album_art_url
+    // to null so AlbumArtImage falls through to the album-art edge function which
+    // looks up the correct art by artist+title.
     const recentTracks: NowPlayingTrack[] = (data.recent || []).map((track: any) => ({
       id: `recent-${track.artworkid}-${track.started}`,
       title: track.tracktitle || 'Unknown',
@@ -85,9 +89,7 @@ async function fetchFromRadioBoss(): Promise<NowPlayingResponse> {
       album: null,
       play_started_at: track.started || new Date().toISOString(),
       duration: null,
-      album_art_url: track.artworkid 
-        ? `https://c22.radioboss.fm/w/artwork/${track.artworkid}/364.jpg`
-        : null,
+      album_art_url: null,
       genre: null,
       year: null,
       artwork_id: track.artworkid || null,
