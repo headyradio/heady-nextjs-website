@@ -87,10 +87,12 @@ const articleWithBodyProjection = `{
 // Paginated list of articles with optional category/tag filters
 export const allArticlesQuery = groq`{
   "articles": *[_type == "newsArticle"
+    && defined(slug.current)
     && ($category == "" || category->slug.current == $category)
     && ($tag == "" || $tag in tags[]->slug.current)
   ] | order(publishedAt desc) [$start...$end] ${articleProjection},
   "total": count(*[_type == "newsArticle"
+    && defined(slug.current)
     && ($category == "" || category->slug.current == $category)
     && ($tag == "" || $tag in tags[]->slug.current)
   ])
@@ -100,13 +102,13 @@ export const allArticlesQuery = groq`{
 export const articleBySlugQuery = groq`*[_type == "newsArticle" && slug.current == $slug][0] ${articleWithBodyProjection}`;
 
 // Latest N articles (for homepage featured)
-export const latestArticlesQuery = groq`*[_type == "newsArticle"] | order(publishedAt desc) [0...$limit] ${articleProjection}`;
+export const latestArticlesQuery = groq`*[_type == "newsArticle" && defined(slug.current)] | order(publishedAt desc) [0...$limit] ${articleProjection}`;
 
 // Related articles (same category, excluding current article)
-export const relatedArticlesQuery = groq`*[_type == "newsArticle" && category->slug.current == $categorySlug && _id != $currentId] | order(publishedAt desc) [0...3] ${articleProjection}`;
+export const relatedArticlesQuery = groq`*[_type == "newsArticle" && defined(slug.current) && category->slug.current == $categorySlug && _id != $currentId] | order(publishedAt desc) [0...3] ${articleProjection}`;
 
 // Fallback: recent articles from any category (excluding current)
-export const recentArticlesQuery = groq`*[_type == "newsArticle" && _id != $currentId] | order(publishedAt desc) [0...3] ${articleProjection}`;
+export const recentArticlesQuery = groq`*[_type == "newsArticle" && defined(slug.current) && _id != $currentId] | order(publishedAt desc) [0...3] ${articleProjection}`;
 
 // All categories
 export const allCategoriesQuery = groq`*[_type == "category"] | order(title asc) {
