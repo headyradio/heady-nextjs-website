@@ -850,6 +850,49 @@ export type Database = {
         }
         Relationships: []
       }
+      songs: {
+        Row: {
+          id: string
+          artist: string
+          title: string
+          song_key: string
+          album: string | null
+          album_art_url: string | null
+          tidal_track_id: string | null
+          genre: string | null
+          year: string | null
+          duration: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          artist: string
+          title: string
+          album?: string | null
+          album_art_url?: string | null
+          tidal_track_id?: string | null
+          genre?: string | null
+          year?: string | null
+          duration?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          artist?: string
+          title?: string
+          album?: string | null
+          album_art_url?: string | null
+          tidal_track_id?: string | null
+          genre?: string | null
+          year?: string | null
+          duration?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       saved_songs: {
         Row: {
           album: string | null

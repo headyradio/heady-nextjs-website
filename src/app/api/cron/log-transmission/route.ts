@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { searchTidalTrack } from '@/lib/tidal';
 
 const RADIOBOSS_API_URL = 'https://c22.radioboss.fm/api/info/364?key=FZPFZ5DNHQOP';
 
@@ -158,6 +159,82 @@ export async function GET(request: Request) {
       }
     }
 
+    // Upsert unique songs into the songs library + resolve artwork via TIDAL
+    const songsUpserted: string[] = [];
+    const songsSkipped: string[] = [];
+
+    // Deduplicate tracksToLog by artist+title to avoid redundant lookups
+    const seenSongKeys = new Set<string>();
+    const uniqueSongs = tracksToLog.filter(track => {
+      const key = `${track.artist.toLowerCase()}|||${track.title.toLowerCase()}`;
+      if (seenSongKeys.has(key)) return false;
+      seenSongKeys.add(key);
+      return true;
+    });
+
+    for (const track of uniqueSongs) {
+      try {
+        // Check if song already exists with artwork
+        const { data: existingSong } = await supabase
+          .from('songs')
+          .select('id, album_art_url')
+          .ilike('artist', track.artist)
+          .ilike('title', track.title)
+          .limit(1)
+          .single();
+
+        if (existingSong?.album_art_url) {
+          songsSkipped.push(`${track.artist} - ${track.title}`);
+          continue;
+        }
+
+        // Resolve artwork via TIDAL API (only for new or artless songs)
+        let albumArtUrl: string | null = null;
+        let tidalTrackId: string | null = null;
+        let albumName: string | null = track.album;
+
+        try {
+          const tidalResult = await searchTidalTrack(track.artist, track.title);
+          if (tidalResult) {
+            albumArtUrl = tidalResult.albumArtUrl;
+            tidalTrackId = tidalResult.tidalTrackId;
+            albumName = tidalResult.album || track.album;
+          }
+        } catch (tidalErr) {
+          console.error(`[Cron] TIDAL lookup failed for ${track.artist} - ${track.title}:`, tidalErr);
+        }
+
+        if (existingSong) {
+          // Song exists but has no artwork — update it
+          await supabase
+            .from('songs')
+            .update({
+              album_art_url: albumArtUrl,
+              tidal_track_id: tidalTrackId,
+              album: albumName || undefined,
+              updated_at: new Date().toISOString(),
+            })
+            .eq('id', existingSong.id);
+        } else {
+          // New song — insert it
+          await supabase.from('songs').insert({
+            artist: track.artist,
+            title: track.title,
+            album: albumName,
+            album_art_url: albumArtUrl,
+            tidal_track_id: tidalTrackId,
+            genre: track.genre,
+            year: track.year,
+            duration: track.duration,
+          });
+        }
+
+        songsUpserted.push(`${track.artist} - ${track.title}${albumArtUrl ? ' (art found)' : ' (no art)'}`);
+      } catch (err) {
+        console.error(`[Cron] Song upsert failed: ${track.artist} - ${track.title}:`, err);
+      }
+    }
+
     return NextResponse.json({
       success: true,
       timestamp: new Date().toISOString(),
@@ -165,6 +242,8 @@ export async function GET(request: Request) {
       skipped,
       errors,
       totalTracksChecked: tracksToLog.length,
+      songsUpserted,
+      songsSkipped,
     });
   } catch (error) {
     console.error('[Cron] Failed to log transmissions:', error);

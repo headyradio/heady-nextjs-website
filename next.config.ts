@@ -31,6 +31,10 @@ const nextConfig: NextConfig = {
         protocol: 'https',
         hostname: 'c22.radioboss.fm',
       },
+      {
+        protocol: 'https',
+        hostname: 'resources.tidal.com',
+      },
     ],
   },
 };

@@ -127,8 +127,36 @@ export const useTransmissionHistory = ({
       }
 
       // Apply the actual limit after deduplication and filtering
-      // This ensures we always show the requested number of tracks
-      return filteredData.slice(0, limit);
+      filteredData = filteredData.slice(0, limit);
+
+      // Batch-fetch album art from the songs table (replaces per-card edge function calls)
+      const songKeys = [...new Set(
+        filteredData.map(t => `${t.artist.toLowerCase()}|||${t.title.toLowerCase()}`)
+      )];
+
+      if (songKeys.length > 0) {
+        const { data: songsData } = await supabase
+          .from('songs')
+          .select('song_key, album_art_url')
+          .in('song_key', songKeys);
+
+        if (songsData) {
+          const artworkMap = new Map<string, string>();
+          for (const song of songsData) {
+            if (song.album_art_url) {
+              artworkMap.set(song.song_key, song.album_art_url);
+            }
+          }
+
+          filteredData = filteredData.map(t => {
+            const key = `${t.artist.toLowerCase()}|||${t.title.toLowerCase()}`;
+            const cachedArt = artworkMap.get(key);
+            return cachedArt ? { ...t, album_art_url: cachedArt } : t;
+          });
+        }
+      }
+
+      return filteredData;
     },
     staleTime: 30000, // Consider data fresh for 30 seconds
     gcTime: 300000, // Keep in cache for 5 minutes
