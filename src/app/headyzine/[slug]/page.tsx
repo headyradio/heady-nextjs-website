@@ -121,7 +121,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
       />
 
       {/* Article Header (Editorial Layout) */}
-      <div className="container mx-auto px-4 pt-10 pb-6 max-w-4xl">
+      <div className="container mx-auto px-4 pt-6 pb-4 max-w-4xl">
         {/* Back Link */}
         <div className="mb-8">
           <Link
@@ -141,13 +141,13 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
         )}
 
         {/* Title */}
-        <h1 className="text-4xl md:text-5xl lg:text-7xl font-black text-white leading-[1.1] mb-6 tracking-tight">
+        <h1 className="text-2xl md:text-3xl lg:text-4xl font-black text-white leading-tight mb-4 tracking-tight">
           {article.title}
         </h1>
 
         {/* Excerpt */}
         {article.excerpt && (
-          <p className="text-white/70 text-xl md:text-2xl max-w-3xl leading-snug mb-8 font-medium">
+          <p className="text-white/60 text-base md:text-lg max-w-3xl leading-relaxed mb-6">
             {article.excerpt}
           </p>
         )}
@@ -188,7 +188,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
       </div>
 
       {/* Related Articles */}
-      {article.category && (
+      {article.category?.slug?.current && (
         <Suspense fallback={null}>
           <RelatedArticles
             categorySlug={article.category.slug.current}
