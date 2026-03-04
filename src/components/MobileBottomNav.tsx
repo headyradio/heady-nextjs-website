@@ -1,11 +1,11 @@
-import { Radio, Heart, History, Flame, Mic } from 'lucide-react';
+import { Radio, Heart, History, Flame, Newspaper } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 
 interface MobileBottomNavProps {
-  onTabChange?: (tab: 'player' | 'history' | 'hot40' | 'shows' | 'support') => void;
-  activeTab?: 'player' | 'history' | 'hot40' | 'shows' | 'support';
+  onTabChange?: (tab: 'player' | 'history' | 'hot40' | 'zine' | 'support') => void;
+  activeTab?: 'player' | 'history' | 'hot40' | 'zine' | 'support';
 }
 
 export const MobileBottomNav = ({ onTabChange, activeTab = 'player' }: MobileBottomNavProps) => {
@@ -14,7 +14,7 @@ export const MobileBottomNav = ({ onTabChange, activeTab = 'player' }: MobileBot
 
   if (!isHomePage) return null;
 
-  const handleTabClick = (tab: 'player' | 'history' | 'hot40' | 'shows' | 'support') => {
+  const handleTabClick = (tab: 'player' | 'history' | 'hot40' | 'zine' | 'support') => {
     onTabChange?.(tab);
   };
 
@@ -63,19 +63,17 @@ export const MobileBottomNav = ({ onTabChange, activeTab = 'player' }: MobileBot
           <span className="text-[9px] font-bold uppercase tracking-wide">Hot 40</span>
         </button>
 
-        <button
-          onClick={() => handleTabClick('shows')}
-          aria-label="Shows - View scheduled shows and events"
-          aria-selected={activeTab === 'shows'}
-          role="tab"
+        <Link
+          href="/headyzine"
+          aria-label="Zine - Read the HEADY Zine"
           className={cn(
             "flex flex-col items-center justify-center gap-0.5 flex-1 h-14 transition-all relative rounded-lg",
-            activeTab === 'shows' ? "text-primary bg-primary/20" : "text-white/60 hover:bg-white/10 hover:text-white/80"
+            "text-white/60 hover:bg-white/10 hover:text-white/80"
           )}
         >
-          <Mic className={cn("h-4 w-4", activeTab === 'shows' && "scale-110")} aria-hidden="true" />
-          <span className="text-[9px] font-bold uppercase tracking-wide">Shows</span>
-        </button>
+          <Newspaper className="h-4 w-4" aria-hidden="true" />
+          <span className="text-[9px] font-bold uppercase tracking-wide">Zine</span>
+        </Link>
 
         <button
           onClick={() => handleTabClick('support')}

@@ -33,7 +33,7 @@ interface HomePageContentProps {
 }
 
 export function HomePageContent({ initialData }: HomePageContentProps) {
-  const [mobileTab, setMobileTab] = useState<'player' | 'history' | 'hot40' | 'shows' | 'support'>('player');
+  const [mobileTab, setMobileTab] = useState<'player' | 'history' | 'hot40' | 'zine' | 'support'>('player');
   const { nowPlaying, isLive, isLoading, error } = useRadioBoss(initialData);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedDate, setSelectedDate] = useState('all');
@@ -47,7 +47,7 @@ export function HomePageContent({ initialData }: HomePageContentProps) {
   
   // Data hooks - fetch more data for mobile scrolling
   const { data: historyData, isLoading: historyLoading, isFetching, refetch } = useTransmissionHistory({
-    limit: 50,
+    limit: 100,
     searchQuery: '',
     selectedDate: 'all',
     selectedHour: 'all',
@@ -88,7 +88,7 @@ export function HomePageContent({ initialData }: HomePageContentProps) {
 
   const handleLoadMoreHot = async () => {
     setIsLoadingMoreHot(true);
-    setHotSongsDisplayLimit(prev => Math.min(prev + 10, 40));
+    setHotSongsDisplayLimit(prev => prev + 10);
     setTimeout(() => setIsLoadingMoreHot(false), 800);
   };
 
@@ -183,13 +183,13 @@ export function HomePageContent({ initialData }: HomePageContentProps) {
                   </div>
                 </div>
               ) : (
-                <TransmissionLog 
-                  transmissions={transmissions}
+                <TransmissionLog
+                  transmissions={transmissions.slice(0, displayLimit)}
                   displayLimit={displayLimit}
                   isLoadingMore={isLoadingMore}
                   isFetching={isFetching}
-                  handleLoadMore={handleLoadMore}
-                  totalCount={historyData?.length || 0}
+                  handleLoadMore={displayLimit < transmissions.length ? handleLoadMore : undefined}
+                  totalCount={transmissions.length}
                 />
               )}
             </div>
@@ -244,7 +244,7 @@ export function HomePageContent({ initialData }: HomePageContentProps) {
                   </div>
                 )}
                 
-                {hotSongsDisplayLimit < 40 && hotSongsData.length > hotSongsDisplayLimit && (
+                {hotSongsData.length > hotSongsDisplayLimit && (
                   <div className="mt-6 text-center animate-fade-in">
                     <Button
                       onClick={handleLoadMoreHot}
@@ -277,71 +277,6 @@ export function HomePageContent({ initialData }: HomePageContentProps) {
           </ScrollArea>
         )}
 
-        {mobileTab === 'shows' && (
-          <ScrollArea className="h-[calc(100vh-180px)] bg-black">
-            <div className="px-4 py-6">
-            <h2 className="text-2xl font-black mb-4 uppercase tracking-tight text-white">Shows</h2>
-            <p className="mb-6 text-white/70">Your guide to HEADY.FM programming</p>
-
-            <div className="space-y-6">
-              {/* Night Treats Show */}
-              <div className="border border-white/20 rounded-xl overflow-hidden bg-gray-900/80">
-                <div className="p-6 space-y-4">
-                  <h3 className="text-2xl font-bold text-white">Night Treats</h3>
-                  <p className="text-white/80">
-                    Late night electronic music journey featuring deep house, progressive house, tech house, and experimental beats.
-                  </p>
-
-                  {/* DJs */}
-                  <div className="space-y-3">
-                    <h4 className="font-bold uppercase text-sm tracking-wide text-white/60">Featured DJs</h4>
-                    <div className="flex gap-4">
-                      <div className="flex items-center gap-3">
-                        <img 
-                          src="/assets/card1-rouxbais.webp" 
-                          alt="Rouxbais"
-                          className="w-16 h-16 rounded-full object-cover border-2 border-primary/20"
-                          loading="lazy"
-                          width="64"
-                          height="64"
-                        />
-                        <p className="font-bold text-white">Rouxbais</p>
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <img 
-                          src="/assets/card2-dale.webp" 
-                          alt="Dale"
-                          className="w-16 h-16 rounded-full object-cover border-2 border-primary/20"
-                          loading="lazy"
-                          width="64"
-                          height="64"
-                        />
-                        <p className="font-bold text-white">Dale</p>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Air Time */}
-                  <div className="pt-4 border-t border-white/20">
-                    <p className="text-sm font-bold mb-2 uppercase tracking-wide text-white/60">Air Time</p>
-                    <p className="text-lg font-bold text-primary">Friday at 10:00 PM ET</p>
-                  </div>
-
-                  {/* Replays */}
-                  <div className="pt-4 border-t border-white/20">
-                    <p className="text-sm font-bold mb-2 uppercase tracking-wide text-white/60">Replays</p>
-                    <ul className="space-y-1 text-sm text-white/80">
-                      <li>• Fridays: 11:00 PM</li>
-                      <li>• Saturdays: 12:00 AM, 1:00 AM, 3:00 AM</li>
-                      <li>• Sundays: 1:00 AM</li>
-                    </ul>
-                  </div>
-                </div>
-              </div>
-            </div>
-            </div>
-          </ScrollArea>
-        )}
         
         {mobileTab === 'support' && <MobileSupportTab />}
       </div>

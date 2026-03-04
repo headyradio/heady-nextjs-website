@@ -20,7 +20,8 @@ export const useHotSongs = (limit: number = 40) => {
         .from('transmissions')
         .select('*')
         .gte('play_started_at', sevenDaysAgo.toISOString())
-        .order('play_started_at', { ascending: false });
+        .order('play_started_at', { ascending: false })
+        .limit(2000);
 
       if (error) {
         console.error('Error fetching hot songs:', error);

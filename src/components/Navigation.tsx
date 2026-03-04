@@ -53,8 +53,8 @@ const Navigation = () => {
       {/* Main Navigation Bar */}
       <div className="bg-[#1a0a2e]">
         <div className="container mx-auto px-4">
-          {/* 3-column grid ensures true center alignment regardless of side content widths */}
-          <div className="grid grid-cols-3 h-14 items-center">
+          {/* relative so the logo can be absolutely centered on mobile */}
+          <div className="relative grid grid-cols-3 h-14 items-center">
             {/* Left: Navigation Links */}
             <div className="hidden md:flex items-center gap-1 justify-start">
               <Link href="/headyzine">
@@ -106,8 +106,8 @@ const Navigation = () => {
               </button>
             </div>
 
-            {/* Center: Logo - always centered in middle column */}
-            <div className="flex items-center justify-center">
+            {/* Center: Logo — absolute on mobile (left col is hidden, breaking grid centering), static on desktop */}
+            <div className="absolute left-1/2 -translate-x-1/2 md:relative md:left-auto md:translate-x-0 flex items-center justify-center">
               <Link 
                 href="/" 
                 onClick={() => {
