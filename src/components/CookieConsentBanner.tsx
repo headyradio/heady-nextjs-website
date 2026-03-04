@@ -31,9 +31,9 @@ function PrivacyPolicyPopup({ onClose }: { onClose: () => void }) {
             </svg>
           </button>
         </div>
-        {/* iframe — sandboxed so links stay inside and can't navigate the parent */}
+        {/* iframe — ?modal=1 hides nav; sandboxed so links can't navigate the parent */}
         <iframe
-          src="/privacy-policy"
+          src="/privacy-policy?modal=1"
           className="flex-1 w-full bg-black"
           sandbox="allow-same-origin allow-scripts"
           title="Privacy Policy"
@@ -50,6 +50,8 @@ export function CookieConsentBanner() {
   const [showPrivacy, setShowPrivacy] = useState(false);
 
   useEffect(() => {
+    // Never show banner when rendered inside an iframe (e.g. privacy policy popup)
+    if (window.self !== window.top) return;
     const stored = localStorage.getItem(CONSENT_KEY);
     if (!stored) {
       const t = setTimeout(() => setShow(true), 400);

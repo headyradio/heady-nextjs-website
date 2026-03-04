@@ -8,12 +8,17 @@ export const metadata: Metadata = {
     'Learn how HEADY.FM collects, uses, and protects your data. CCPA and CIPA compliant.',
 };
 
-export default function PrivacyPolicyPage() {
+export default function PrivacyPolicyPage({
+  searchParams,
+}: {
+  searchParams: { modal?: string };
+}) {
   const lastUpdated = 'March 3, 2026';
+  const isModal = searchParams.modal === '1';
 
   return (
     <div className="min-h-screen bg-black text-white">
-      <Navigation />
+      {!isModal && <Navigation />}
 
       <div className="container mx-auto max-w-3xl px-4 py-16">
         <h1 className="mb-2 text-3xl font-black uppercase tracking-tight">
