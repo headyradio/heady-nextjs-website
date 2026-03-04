@@ -5,7 +5,7 @@ import { Providers } from "./providers";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/react";
 import { FloatingChatWidget } from "@/components/FloatingChatWidget";
-import { CookieConsentBanner } from "@/components/CookieConsentBanner";
+import { CookieConsentBanner, CookiePreferencesTrigger } from "@/components/CookieConsentBanner";
 import { GoogleAnalytics } from "@/components/GoogleAnalytics";
 
 export const metadata: Metadata = {
@@ -89,6 +89,7 @@ export default function RootLayout({
           {children}
           <FloatingChatWidget />
           <CookieConsentBanner />
+          <CookiePreferencesTrigger />
         </Providers>
         <GoogleAnalytics />
         <Analytics />

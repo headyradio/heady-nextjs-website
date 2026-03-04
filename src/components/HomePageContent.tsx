@@ -26,6 +26,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
 import { RefreshCw } from 'lucide-react';
 import { FeaturedArticlesClient } from '@/components/FeaturedArticlesClient';
+import { ManageCookiePreferencesLink } from '@/components/CookieConsentBanner';
 
 interface HomePageContentProps {
   initialData?: InitialServerData;
@@ -456,8 +457,12 @@ export function HomePageContent({ initialData }: HomePageContentProps) {
             <h3 className="text-2xl font-black text-white">
               HEADY EXTRATERRESTRIAL RADIO
             </h3>
-            <div className="pt-4 text-sm text-white/40">
-              ©2026 HEADY Radio, a Prospect Media property. All rights reserved.
+            <div className="pt-4 text-sm text-white/40 space-y-2">
+              <p>©2026 HEADY Radio, a Prospect Media property. All rights reserved.</p>
+              <div className="flex items-center justify-center gap-4">
+                <a href="/privacy-policy" className="underline hover:text-white/60">Privacy Policy</a>
+                <ManageCookiePreferencesLink />
+              </div>
             </div>
           </div>
         </div>
