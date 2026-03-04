@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { PrivacyPolicyContent } from '@/components/PrivacyPolicyContent';
 
 const CONSENT_KEY = 'cookie_consent';
 
@@ -31,13 +32,10 @@ function PrivacyPolicyPopup({ onClose }: { onClose: () => void }) {
             </svg>
           </button>
         </div>
-        {/* iframe — ?modal=1 hides nav; sandboxed so links can't navigate the parent */}
-        <iframe
-          src="/privacy-policy?modal=1"
-          className="flex-1 w-full bg-black"
-          sandbox="allow-same-origin allow-scripts"
-          title="Privacy Policy"
-        />
+        {/* Scrollable policy content — no nav, no iframe */}
+        <div className="flex-1 overflow-y-auto px-6 py-6 bg-black">
+          <PrivacyPolicyContent />
+        </div>
       </div>
     </div>
   );
