@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { searchTidalTrack } from '@/lib/tidal';
+import { easternToUtc } from '@/utils/easternToUtc';
 
 const RADIOBOSS_API_URL = 'https://c22.radioboss.fm/api/info/364?key=FZPFZ5DNHQOP';
 
@@ -28,21 +29,6 @@ interface RadioBossCurrentTrack {
 }
 
 export const dynamic = 'force-dynamic';
-
-/**
- * RadioBoss returns timestamps in Eastern Time (America/New_York, UTC-5 EST / UTC-4 EDT).
- * The DB stores everything in UTC. Convert before inserting.
- * Format from RadioBoss: "2026-02-26 03:22:12"
- */
-function easternToUtc(easternTimestamp: string): string {
-  if (!easternTimestamp) return new Date().toISOString();
-  // Append '-05:00' (EST) offset — RadioBoss is in New York
-  // During EDT (March-Nov) it's -04:00, but using -05:00 is consistent with
-  // how the old Edge Function handled it (fromZonedTime with America/New_York)
-  const withOffset = easternTimestamp.replace(' ', 'T') + '-05:00';
-  const date = new Date(withOffset);
-  return isNaN(date.getTime()) ? new Date().toISOString() : date.toISOString();
-}
 
 export async function GET(request: Request) {
   // Verify the request is from Vercel Cron (in production)

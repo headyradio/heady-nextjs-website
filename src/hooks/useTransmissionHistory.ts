@@ -77,9 +77,10 @@ export const useTransmissionHistory = ({
 
       let filteredData = data as TransmissionHistory[];
 
-      // Filter out entries with future timestamps (bad data from RadioBoss)
-      const now = new Date();
-      filteredData = filteredData.filter(t => new Date(t.play_started_at) <= now);
+      // Filter out entries with timestamps more than 2 hours in the future
+      // (guards against bad data from RadioBoss; 2h buffer handles DST edge cases)
+      const twoHoursFromNow = new Date(Date.now() + 2 * 60 * 60 * 1000);
+      filteredData = filteredData.filter(t => new Date(t.play_started_at) <= twoHoursFromNow);
 
       // Aggressive deduplication: Remove tracks with same artist+title within 10 minutes of each other
       const deduplicatedData: TransmissionHistory[] = [];

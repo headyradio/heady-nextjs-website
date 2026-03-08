@@ -1,4 +1,5 @@
 import { HomePageContent } from '@/components/HomePageContent';
+import { easternToUtc } from '@/utils/easternToUtc';
 
 export interface NowPlayingData {
   nowPlaying: {
@@ -35,25 +36,35 @@ async function getNowPlaying(): Promise<NowPlayingData> {
     }
 
     const data = await response.json();
-    
-    // Parse the RadioBoss API response format
-    const nowPlaying = data.artist && data.title ? {
-      id: `${data.artist}-${data.title}-${Date.now()}`,
-      title: data.title || 'Unknown',
-      artist: data.artist || 'Unknown Artist',
-      album: data.album || null,
-      play_started_at: new Date().toISOString(),
-      duration: data.duration ? String(data.duration) : null,
-      album_art_url: data.cover || null,
-      genre: data.genre || null,
-      year: data.year ? String(data.year) : null,
+
+    // Parse current track from the nested RadioBoss format
+    const currentTrack = data.currenttrack_info?.['@attributes'];
+    const listeners = data.listeners || Number(currentTrack?.LISTENERS) || 0;
+
+    // Build artwork URL with cache-busting track key
+    let artworkUrl = data.links?.artwork || null;
+    if (artworkUrl && currentTrack?.TITLE) {
+      const trackKey = encodeURIComponent(`${currentTrack.ARTIST}-${currentTrack.TITLE}`);
+      artworkUrl = `${artworkUrl}?t=${trackKey}`;
+    }
+
+    const nowPlaying = currentTrack?.TITLE ? {
+      id: `${currentTrack.ARTIST}-${currentTrack.TITLE}-${Date.now()}`,
+      title: currentTrack.TITLE || 'Unknown',
+      artist: currentTrack.ARTIST || 'Unknown Artist',
+      album: currentTrack.ALBUM || null,
+      play_started_at: currentTrack.LASTPLAYED ? easternToUtc(currentTrack.LASTPLAYED) : new Date().toISOString(),
+      duration: currentTrack.DURATION || null,
+      album_art_url: artworkUrl,
+      genre: currentTrack.GENRE || null,
+      year: currentTrack.YEAR || null,
     } : null;
 
     return {
       nowPlaying,
       stationName: data.station_name || 'E.T. Radio',
-      listenersCount: data.listeners || 0,
-      isLive: data.is_live === true || data.is_live === 'true',
+      listenersCount: listeners,
+      isLive: data.live === true,
       lastUpdate: new Date().toISOString(),
     };
   } catch (error) {
