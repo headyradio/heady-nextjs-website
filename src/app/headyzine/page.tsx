@@ -9,10 +9,14 @@ export const metadata: Metadata = {
   title: "HeadyZine - Music News & Stories",
   description:
     "Stories, interviews, and news from the HEADY.FM universe. Discover the latest in indie rock, underground music, and the artists we love.",
+  alternates: {
+    canonical: "https://heady.fm/headyzine",
+  },
   openGraph: {
     title: "HeadyZine - Music News & Stories | HEADY.FM",
     description:
       "Stories, interviews, and news from the HEADY.FM universe.",
+    url: "https://heady.fm/headyzine",
     type: "website",
   },
 };

@@ -53,11 +53,18 @@ export async function generateMetadata({
   return {
     title: article.seo?.metaTitle || article.title,
     description: article.seo?.metaDescription || article.excerpt,
+    alternates: {
+      canonical: `https://heady.fm/headyzine/${slug}`,
+    },
     openGraph: {
       title: article.seo?.metaTitle || article.title,
       description: article.seo?.metaDescription || article.excerpt || undefined,
+      url: `https://heady.fm/headyzine/${slug}`,
       type: "article",
       publishedTime: article.publishedAt,
+      modifiedTime: article._updatedAt,
+      section: article.category?.title,
+      tags: article.tags?.map((t) => t.title),
       authors: article.author ? [article.author.name] : undefined,
       images: ogImage ? [{ url: ogImage, width: 1200, height: 630 }] : undefined,
     },
@@ -80,35 +87,81 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
 
   if (!article) notFound();
 
-  // JSON-LD structured data
+  // JSON-LD structured data — Article + BreadcrumbList in a @graph
+  const articleImage = article.featuredImage
+    ? urlFor(article.featuredImage).width(1200).height(630).url()
+    : undefined;
+
   const jsonLd = {
     "@context": "https://schema.org",
-    "@type": "Article",
-    headline: article.title,
-    description: article.excerpt,
-    datePublished: article.publishedAt,
-    dateModified: article._updatedAt,
-    author: article.author
-      ? {
-          "@type": "Person",
-          name: article.author.name,
-        }
-      : undefined,
-    publisher: {
-      "@type": "Organization",
-      name: "HEADY.FM",
-      logo: {
-        "@type": "ImageObject",
-        url: "https://heady.fm/favicon.png",
+    "@graph": [
+      {
+        "@type": "Article",
+        headline: article.title,
+        description: article.excerpt,
+        datePublished: article.publishedAt,
+        dateModified: article._updatedAt,
+        url: `https://heady.fm/headyzine/${slug}`,
+        ...(article.author && {
+          author: {
+            "@type": "Person",
+            name: article.author.name,
+          },
+        }),
+        publisher: {
+          "@type": "Organization",
+          name: "HEADY.FM",
+          url: "https://heady.fm",
+          logo: {
+            "@type": "ImageObject",
+            url: "https://heady.fm/favicon.png",
+          },
+        },
+        ...(articleImage && { image: articleImage }),
+        ...(article.category && {
+          articleSection: article.category.title,
+        }),
+        ...(article.tags &&
+          article.tags.length > 0 && {
+            keywords: article.tags.map((t) => t.title).join(", "),
+          }),
+        ...(article.readingTime && {
+          timeRequired: `PT${article.readingTime}M`,
+        }),
+        mainEntityOfPage: {
+          "@type": "WebPage",
+          "@id": `https://heady.fm/headyzine/${slug}`,
+        },
+        isPartOf: {
+          "@type": "WebSite",
+          name: "HEADY.FM",
+          url: "https://heady.fm",
+        },
       },
-    },
-    image: article.featuredImage
-      ? urlFor(article.featuredImage).width(1200).height(630).url()
-      : undefined,
-    mainEntityOfPage: {
-      "@type": "WebPage",
-      "@id": `https://heady.fm/headyzine/${slug}`,
-    },
+      {
+        "@type": "BreadcrumbList",
+        itemListElement: [
+          {
+            "@type": "ListItem",
+            position: 1,
+            name: "Home",
+            item: "https://heady.fm",
+          },
+          {
+            "@type": "ListItem",
+            position: 2,
+            name: "HeadyZine",
+            item: "https://heady.fm/headyzine",
+          },
+          {
+            "@type": "ListItem",
+            position: 3,
+            name: article.title,
+            item: `https://heady.fm/headyzine/${slug}`,
+          },
+        ],
+      },
+    ],
   };
 
   return (

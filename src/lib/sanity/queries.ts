@@ -127,3 +127,10 @@ export const allTagsQuery = groq`*[_type == "tag" && defined(slug.current)] | or
 
 // All article slugs (for generateStaticParams)
 export const allArticleSlugsQuery = groq`*[_type == "newsArticle" && defined(slug.current)][].slug.current`;
+
+// Article slugs with dates (for sitemap)
+export const sitemapArticlesQuery = groq`*[_type == "newsArticle" && defined(slug.current)] | order(publishedAt desc) {
+  "slug": slug.current,
+  publishedAt,
+  _updatedAt
+}`;
