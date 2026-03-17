@@ -5,6 +5,7 @@ import { type InitialServerData } from '@/hooks/useRadioBoss';
 import { RadioBossProvider, useRadioBossContext } from '@/contexts/RadioBossContext';
 import { useTransmissionHistory } from '@/hooks/useTransmissionHistory';
 import { useHotSongs } from '@/hooks/useHotSongs';
+import { isStationIdTrack } from '@/utils/stationFiltering';
 import Navigation from '@/components/Navigation';
 import { VideoHero } from '@/components/VideoHero';
 import { FeaturedCard } from '@/components/FeaturedCard';
@@ -64,14 +65,15 @@ function HomePageContentInner() {
 
   const { data: hotSongsData, isLoading: hotSongsLoading } = useHotSongs(40);
 
-  // Update browser tab title with currently playing song
+  // Update browser tab title with currently playing song (skip station IDs/jingles
+  // so crawlers always see the SEO title)
   useEffect(() => {
-    if (nowPlaying && nowPlaying.artist && nowPlaying.title) {
+    if (nowPlaying && nowPlaying.artist && nowPlaying.title && !isStationIdTrack(nowPlaying)) {
       document.title = `${nowPlaying.artist} - ${nowPlaying.title} | HEADY.FM`;
     } else {
       document.title = 'Alternative & Indie Rock Radio - HEADY.FM';
     }
-    
+
     return () => {
       document.title = 'Alternative & Indie Rock Radio - HEADY.FM';
     };
