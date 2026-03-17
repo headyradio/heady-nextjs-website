@@ -1,5 +1,5 @@
 export function PrivacyPolicyContent() {
-  const lastUpdated = 'March 3, 2026';
+  const lastUpdated = 'March 17, 2026';
 
   return (
     <div className="text-sm leading-relaxed text-white/70">
@@ -41,8 +41,7 @@ export function PrivacyPolicyContent() {
             a) Analytics Data
           </h3>
           <p className="mb-3">
-            Only if you have given consent, we use analytics tools to collect anonymous usage
-            data including:
+            We use analytics tools to collect anonymous usage data by default, including:
           </p>
           <ul className="mb-3 list-disc space-y-1 pl-5">
             <li>Pages visited and time spent on each page</li>
@@ -53,8 +52,8 @@ export function PrivacyPolicyContent() {
           </ul>
           <p>
             Analytics tools do not collect your name, email address, or any information that
-            directly identifies you. Analytics cookies are{' '}
-            <strong className="text-white">not set</strong> unless you explicitly accept.
+            directly identifies you. You can opt out of analytics tracking at any time using
+            the Cookie Preferences option in the site footer.
           </p>
 
           <h3 className="mb-2 mt-4 font-semibold text-white/90">
@@ -102,18 +101,16 @@ export function PrivacyPolicyContent() {
             4. Marketing Pixels &amp; Consent Mode
           </h2>
           <p className="mb-3">
-            We implement consent mode for all marketing pixels and trackers. All consent
-            signals default to{' '}
-            <code className="rounded bg-white/10 px-1 py-0.5 font-mono text-xs">denied</code>{' '}
-            before any tracking script loads. No tracking cookies are written and no data is
-            sent until you explicitly click &ldquo;Accept&rdquo; on the cookie banner.
+            We use an opt-out model for analytics tracking. Analytics cookies are active by
+            default when you visit the site. When you first visit, a non-blocking notice
+            informs you that tracking is active and provides the option to opt out.
           </p>
           <p>
             We collect analytics data only — we do not use trackers for advertising,
             remarketing, or user profiling. Ad storage, ad user data, and ad personalization
-            signals remain{' '}
-            <code className="rounded bg-white/10 px-1 py-0.5 font-mono text-xs">denied</code>{' '}
-            regardless of your consent choice.
+            signals are always{' '}
+            <code className="rounded bg-white/10 px-1 py-0.5 font-mono text-xs">denied</code>.
+            You can opt out of analytics tracking at any time via Cookie Preferences.
           </p>
         </section>
 
@@ -139,8 +136,8 @@ export function PrivacyPolicyContent() {
               personal information.
             </li>
             <li>
-              <strong className="text-white">Right to Non-Discrimination:</strong> Declining
-              tracking cookies does not affect your access to HEADY.FM.
+              <strong className="text-white">Right to Non-Discrimination:</strong> Opting out
+              of tracking does not affect your access to HEADY.FM.
             </li>
           </ul>
           <p className="mt-3">

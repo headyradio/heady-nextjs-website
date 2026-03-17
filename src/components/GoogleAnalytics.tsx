@@ -26,13 +26,14 @@ function revokeConsent() {
 }
 
 export function GoogleAnalytics() {
-  const [consentGranted, setConsentGranted] = useState(false);
+  const [optedOut, setOptedOut] = useState(false);
 
   useEffect(() => {
-    // Check stored consent on mount
+    // Opt-out model: analytics is ON by default, OFF only if user opted out
     const stored = localStorage.getItem('cookie_consent');
-    if (stored === 'granted') {
-      setConsentGranted(true);
+    if (stored === 'denied') {
+      setOptedOut(true);
+      revokeConsent();
     }
 
     // Listen for real-time consent changes
@@ -40,10 +41,10 @@ export function GoogleAnalytics() {
       const consent = (e as CustomEvent<{ consent: 'granted' | 'denied' }>)
         .detail.consent;
       if (consent === 'granted') {
-        setConsentGranted(true);
+        setOptedOut(false);
         grantConsent();
       } else {
-        setConsentGranted(false);
+        setOptedOut(true);
         revokeConsent();
       }
     }
@@ -53,19 +54,13 @@ export function GoogleAnalytics() {
       window.removeEventListener('cookieConsentUpdated', handleConsentUpdate);
   }, []);
 
-  // Fire gtag consent update once the GA script has loaded
-  function handleGALoad() {
-    if (consentGranted) grantConsent();
-  }
-
-  if (!GA_ID || !consentGranted) return null;
+  if (!GA_ID || optedOut) return null;
 
   return (
     <>
       <Script
         src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`}
         strategy="afterInteractive"
-        onLoad={handleGALoad}
       />
       <Script id="gtag-init" strategy="afterInteractive">
         {`

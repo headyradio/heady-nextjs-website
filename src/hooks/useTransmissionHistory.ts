@@ -77,15 +77,21 @@ export const useTransmissionHistory = ({
 
       let filteredData = data as TransmissionHistory[];
 
-      // Filter out entries with timestamps more than 2 hours in the future
-      // (guards against bad data from RadioBoss; 2h buffer handles DST edge cases)
-      const twoHoursFromNow = new Date(Date.now() + 2 * 60 * 60 * 1000);
-      filteredData = filteredData.filter(t => new Date(t.play_started_at) <= twoHoursFromNow);
+      // Filter out entries with timestamps more than 5 minutes in the future
+      // (guards against bad data; DST conversion is now handled correctly in easternToUtc)
+      const fiveMinFromNow = new Date(Date.now() + 5 * 60 * 1000);
+      filteredData = filteredData.filter(t => new Date(t.play_started_at) <= fiveMinFromNow);
 
-      // Aggressive deduplication: Remove tracks with same artist+title within 10 minutes of each other
+      // Deduplication: Remove tracks with same artist+title within 90 minutes of each other.
+      // Uses 90-min window to collapse DST-related duplicate rows (which can be ~60 min apart).
+      // Walks data in ASC order so the EARLIEST (most correct) timestamp is kept.
+      filteredData.sort((a, b) =>
+        new Date(a.play_started_at).getTime() - new Date(b.play_started_at).getTime()
+      );
+
       const deduplicatedData: TransmissionHistory[] = [];
       const seenTracks = new Map<string, Date>();
-      
+
       for (const transmission of filteredData) {
         // Filter out station IDs
         if (isStationIdTrack(transmission)) {
@@ -94,28 +100,31 @@ export const useTransmissionHistory = ({
 
         const trackKey = `${transmission.artist.toLowerCase()}-${transmission.title.toLowerCase()}`;
         const playTime = new Date(transmission.play_started_at);
-        
+
         // Check if we've seen this track recently
         const lastPlayTime = seenTracks.get(trackKey);
-        
+
         if (!lastPlayTime) {
-          // First time seeing this track
           deduplicatedData.push(transmission);
           seenTracks.set(trackKey, playTime);
         } else {
-          // Check if this play is more than 10 minutes apart
           const timeDiff = Math.abs(playTime.getTime() - lastPlayTime.getTime());
-          const tenMinutes = 10 * 60 * 1000;
-          
-          if (timeDiff > tenMinutes) {
-            // Played more than 10 minutes apart, keep it
+          const ninetyMinutes = 90 * 60 * 1000;
+
+          if (timeDiff > ninetyMinutes) {
+            // Legitimate repeat play — keep it
             deduplicatedData.push(transmission);
             seenTracks.set(trackKey, playTime);
           }
           // Otherwise skip this duplicate
         }
       }
-      
+
+      // Re-sort DESC for display (newest first)
+      deduplicatedData.sort((a, b) =>
+        new Date(b.play_started_at).getTime() - new Date(a.play_started_at).getTime()
+      );
+
       filteredData = deduplicatedData;
 
       // Client-side hour filtering (works across all dates in the 7-day range)
@@ -161,6 +170,7 @@ export const useTransmissionHistory = ({
     },
     staleTime: 30000, // Consider data fresh for 30 seconds
     gcTime: 300000, // Keep in cache for 5 minutes
+    refetchInterval: 60000, // Poll Supabase every 60 seconds
     refetchOnWindowFocus: false, // Don't refetch on window focus
   });
 

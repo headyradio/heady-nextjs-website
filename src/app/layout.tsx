@@ -69,17 +69,18 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <head>
         {/* GA Consent Mode v2 — must run synchronously BEFORE any GA script loads.
-            All signals default to denied; no cookies are set until user accepts. */}
+            Analytics defaults to granted (opt-out model); ad signals remain denied.
+            If user has previously opted out, the GoogleAnalytics component will
+            revoke consent on mount. */}
         <Script id="gtag-consent-default" strategy="beforeInteractive">
           {`
             window.dataLayer = window.dataLayer || [];
             function gtag(){dataLayer.push(arguments);}
             gtag('consent', 'default', {
-              analytics_storage: 'denied',
+              analytics_storage: 'granted',
               ad_storage: 'denied',
               ad_user_data: 'denied',
               ad_personalization: 'denied',
-              wait_for_update: 500
             });
           `}
         </Script>

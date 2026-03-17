@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { useRadioBoss, type InitialServerData } from '@/hooks/useRadioBoss';
+import { type InitialServerData } from '@/hooks/useRadioBoss';
+import { RadioBossProvider, useRadioBossContext } from '@/contexts/RadioBossContext';
 import { useTransmissionHistory } from '@/hooks/useTransmissionHistory';
 import { useHotSongs } from '@/hooks/useHotSongs';
 import Navigation from '@/components/Navigation';
@@ -33,8 +34,16 @@ interface HomePageContentProps {
 }
 
 export function HomePageContent({ initialData }: HomePageContentProps) {
+  return (
+    <RadioBossProvider initialData={initialData}>
+      <HomePageContentInner />
+    </RadioBossProvider>
+  );
+}
+
+function HomePageContentInner() {
   const [mobileTab, setMobileTab] = useState<'player' | 'history' | 'hot40' | 'zine' | 'support'>('player');
-  const { nowPlaying, isLive, isLoading, error } = useRadioBoss(initialData);
+  const { nowPlaying, isLive, isLoading, error } = useRadioBossContext()!;
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedDate, setSelectedDate] = useState('all');
   const [selectedHour, setSelectedHour] = useState('all');

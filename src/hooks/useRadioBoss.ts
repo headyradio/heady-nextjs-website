@@ -79,7 +79,10 @@ export interface InitialServerData {
   lastUpdate: string;
 }
 
-export const useRadioBoss = (initialServerData?: InitialServerData) => {
+export const useRadioBoss = (
+  initialServerData?: InitialServerData,
+  options?: { disabled?: boolean },
+) => {
   // Create initial state lazily, prioritizing server data > window data > cache > empty
   const getInitialState = (): RadioBossData => {
     // First priority: Server-side initial data (passed from SSR)
@@ -200,38 +203,39 @@ export const useRadioBoss = (initialServerData?: InitialServerData) => {
     }
   }, [isLoading]);
 
+  const disabled = options?.disabled ?? false;
+
   // Initial fetch - only if we don't have initial data
   useEffect(() => {
-    if (!isInitialized) {
-      // Try to fetch from Edge Function first (faster, cached)
-      getInitialNowPlaying()
-        .then((initialData) => {
-          if (initialData.nowPlaying) {
-            const converted = convertInitialData(initialData);
-            setData(converted);
-            saveCachedData(converted);
-            setIsInitialized(true);
-            setIsLoading(false);
-          } else {
-            // Fall back to direct API call
-            fetchRadioData();
-          }
-        })
-        .catch(() => {
-          // Fall back to direct API call if Edge Function fails
+    if (disabled || isInitialized) return;
+    // Try to fetch from Edge Function first (faster, cached)
+    getInitialNowPlaying()
+      .then((initialData) => {
+        if (initialData.nowPlaying) {
+          const converted = convertInitialData(initialData);
+          setData(converted);
+          saveCachedData(converted);
+          setIsInitialized(true);
+          setIsLoading(false);
+        } else {
+          // Fall back to direct API call
           fetchRadioData();
-        });
-    }
-  }, [isInitialized, fetchRadioData]);
+        }
+      })
+      .catch(() => {
+        // Fall back to direct API call if Edge Function fails
+        fetchRadioData();
+      });
+  }, [disabled, isInitialized, fetchRadioData]);
 
   // Smart polling - check more frequently but only update if changed
   // Start polling after initial data is loaded
   useEffect(() => {
-    if (!isInitialized) return;
-    
+    if (disabled || !isInitialized) return;
+
     const interval = setInterval(fetchRadioData, SMART_POLL_INTERVAL);
     return () => clearInterval(interval);
-  }, [fetchRadioData, isInitialized]);
+  }, [disabled, fetchRadioData, isInitialized]);
 
   return {
     ...data,

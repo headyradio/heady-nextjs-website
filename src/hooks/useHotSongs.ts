@@ -69,10 +69,44 @@ export const useHotSongs = (limit: number = 40) => {
         }
       });
 
-      // Sort by play count and return top songs
-      return Array.from(songMap.values())
+      // Sort by play count and get top songs
+      const topSongs = Array.from(songMap.values())
         .sort((a, b) => b.playCount - a.playCount)
         .slice(0, limit);
+
+      // Batch-fetch permanent artwork from the songs table.
+      // The album_art_url in transmissions often points to RadioBoss's dynamic
+      // artwork endpoint which always serves the *currently playing* track's art,
+      // not the original track's art. The songs table has stable TIDAL URLs.
+      const songKeys = [...new Set(
+        topSongs.map(t => `${t.artist.toLowerCase()}|||${t.title.toLowerCase()}`)
+      )];
+
+      if (songKeys.length > 0) {
+        const { data: songsData } = await supabase
+          .from('songs')
+          .select('song_key, album_art_url')
+          .in('song_key', songKeys);
+
+        if (songsData) {
+          const artworkMap = new Map<string, string>();
+          for (const song of songsData) {
+            if (song.album_art_url) {
+              artworkMap.set(song.song_key, song.album_art_url);
+            }
+          }
+
+          for (const song of topSongs) {
+            const key = `${song.artist.toLowerCase()}|||${song.title.toLowerCase()}`;
+            const stableArt = artworkMap.get(key);
+            if (stableArt) {
+              song.album_art_url = stableArt;
+            }
+          }
+        }
+      }
+
+      return topSongs;
     },
     staleTime: 5 * 60 * 1000, // 5 minutes (aligned with ISR strategy for homepage)
     gcTime: 15 * 60 * 1000, // 15 minutes cache

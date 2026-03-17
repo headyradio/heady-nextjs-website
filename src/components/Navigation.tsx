@@ -12,6 +12,7 @@ import { useRouter, usePathname } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useProfile } from '@/hooks/useProfile';
+import { useRadioBossContext } from '@/contexts/RadioBossContext';
 import { useRadioBoss } from '@/hooks/useRadioBoss';
 import { Skeleton } from '@/components/ui/skeleton';
 import { SupportSidebar } from '@/components/SupportSidebar';
@@ -30,7 +31,11 @@ import {
 } from '@/components/ui/dialog';
 
 const Navigation = () => {
-  const { nowPlaying, isLive } = useRadioBoss();
+  // Use shared context from RadioBossProvider (home page) when available,
+  // otherwise fall back to an independent useRadioBoss() call (other pages).
+  const sharedRadio = useRadioBossContext();
+  const ownRadio = useRadioBoss(undefined, { disabled: !!sharedRadio });
+  const { nowPlaying, isLive } = sharedRadio ?? ownRadio;
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
   const [volumeOpen, setVolumeOpen] = React.useState(false);
   const [supportDialogOpen, setSupportDialogOpen] = React.useState(false);

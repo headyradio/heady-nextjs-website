@@ -51,36 +51,21 @@ export function CookieConsentBanner() {
     // Never show banner when rendered inside an iframe (e.g. privacy policy popup)
     if (window.self !== window.top) return;
     const stored = localStorage.getItem(CONSENT_KEY);
+    // Opt-out model: show notice only if user hasn't acknowledged yet
     if (!stored) {
       const t = setTimeout(() => setShow(true), 400);
       return () => clearTimeout(t);
     }
   }, []);
 
-  // Allow other parts of the app to re-open preferences
-  useEffect(() => {
-    function handleOpen() { setShow(true); }
-    window.addEventListener('openCookiePreferences', handleOpen);
-    return () => window.removeEventListener('openCookiePreferences', handleOpen);
-  }, []);
-
-  // Lock scroll while banner is visible
-  useEffect(() => {
-    if (show) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = '';
-    }
-    return () => { document.body.style.overflow = ''; };
-  }, [show]);
-
-  function handleAccept() {
+  function handleGotIt() {
+    // Acknowledge the notice — tracking stays active (opt-out model)
     localStorage.setItem(CONSENT_KEY, 'granted');
     dispatchConsentEvent('granted');
     setShow(false);
   }
 
-  function handleDecline() {
+  function handleOptOut() {
     localStorage.setItem(CONSENT_KEY, 'denied');
     dispatchConsentEvent('denied');
     setShow(false);
@@ -90,21 +75,18 @@ export function CookieConsentBanner() {
 
   return (
     <>
-      {/* Full-screen interaction blocker — transparent, no click handler */}
-      <div className="fixed inset-0 z-[199]" aria-hidden="true" />
-
-      {/* Privacy policy popup sits above the blocker */}
+      {/* Privacy policy popup */}
       {showPrivacy && (
         <PrivacyPolicyPopup onClose={() => setShowPrivacy(false)} />
       )}
 
-      {/* Banner — bottom-center card */}
+      {/* Non-blocking banner — bottom-center card */}
       <div className="fixed bottom-4 left-1/2 z-[200] w-full max-w-lg -translate-x-1/2 rounded-2xl border border-white/10 bg-gray-950/98 p-6 shadow-2xl backdrop-blur-md">
-        <p className="mb-1.5 text-base font-bold text-white">We value your privacy</p>
+        <p className="mb-1.5 text-base font-bold text-white">Tracking Notice</p>
         <p className="mb-5 text-sm text-white/60">
-          We use marketing pixels, trackers and other tools to improve your
-          experience while accessing HEADY.FM. You are unable to access HEADY.FM
-          unless you make a selection.{' '}
+          This site uses analytics cookies and tracking tools to improve your
+          experience on HEADY.FM. By continuing to use the site, you consent to
+          tracking. You can opt out at any time.{' '}
           <button
             onClick={() => setShowPrivacy(true)}
             className="underline hover:text-white/80"
@@ -114,16 +96,16 @@ export function CookieConsentBanner() {
         </p>
         <div className="flex gap-3">
           <button
-            onClick={handleDecline}
+            onClick={handleOptOut}
             className="flex-1 rounded-full border border-white/20 bg-transparent px-4 py-3 text-sm font-bold text-white/70 transition-colors hover:border-white/40 hover:text-white"
           >
-            Decline
+            Opt Out
           </button>
           <button
-            onClick={handleAccept}
+            onClick={handleGotIt}
             className="flex-1 rounded-full bg-emerald-500 px-4 py-3 text-sm font-bold text-black transition-colors hover:bg-emerald-400"
           >
-            Accept
+            Got It
           </button>
         </div>
       </div>
@@ -133,22 +115,24 @@ export function CookieConsentBanner() {
 
 // ─── Preferences Modal ────────────────────────────────────────────────────────
 
-function PreferencesModal({ onClose, blocking }: { onClose: () => void; blocking: boolean }) {
+function PreferencesModal({ onClose }: { onClose: () => void }) {
   const current =
     typeof window !== 'undefined' ? localStorage.getItem(CONSENT_KEY) : null;
+  // Opt-out model: if no stored value, tracking is active by default
+  const isActive = current !== 'denied';
 
   useEffect(() => {
     document.body.style.overflow = 'hidden';
     return () => { document.body.style.overflow = ''; };
   }, []);
 
-  function handleAccept() {
+  function handleOptIn() {
     localStorage.setItem(CONSENT_KEY, 'granted');
     dispatchConsentEvent('granted');
     onClose();
   }
 
-  function handleDecline() {
+  function handleOptOut() {
     localStorage.setItem(CONSENT_KEY, 'denied');
     dispatchConsentEvent('denied');
     onClose();
@@ -158,16 +142,16 @@ function PreferencesModal({ onClose, blocking }: { onClose: () => void; blocking
     <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
       <div
         className="absolute inset-0 bg-black/80 backdrop-blur-sm"
-        onClick={blocking ? undefined : onClose}
+        onClick={onClose}
       />
       <div className="relative z-10 w-full max-w-md rounded-2xl border border-white/10 bg-gray-950 p-6 shadow-2xl">
         <h2 className="mb-2 text-lg font-black uppercase tracking-tight text-white">
           Cookie Preferences
         </h2>
         <p className="mb-4 text-sm text-white/60">
-          We use marketing pixels, trackers and other tools to improve your
-          experience while accessing HEADY.FM. No tracking is active unless you
-          accept. You can change your preference at any time.
+          This site uses analytics cookies and tracking tools to improve your
+          experience on HEADY.FM. Tracking is active by default. You can opt out
+          at any time below.
         </p>
 
         <div className="mb-4 rounded-xl border border-white/10 bg-white/5 p-4">
@@ -186,13 +170,18 @@ function PreferencesModal({ onClose, blocking }: { onClose: () => void; blocking
           <div className="flex items-start gap-3">
             <div
               className={`mt-0.5 h-2 w-2 shrink-0 rounded-full ${
-                current === 'granted' ? 'bg-emerald-500' : 'bg-white/20'
+                isActive ? 'bg-emerald-500' : 'bg-white/20'
               }`}
             />
             <div>
-              <p className="text-sm font-semibold text-white">Analytics &amp; Tracking</p>
+              <p className="text-sm font-semibold text-white">
+                Analytics &amp; Tracking
+                <span className={`ml-2 text-xs font-normal ${isActive ? 'text-emerald-400' : 'text-white/40'}`}>
+                  {isActive ? 'Active' : 'Opted out'}
+                </span>
+              </p>
               <p className="text-xs text-white/50">
-                Marketing pixels, trackers and other tools — collects anonymous
+                Analytics cookies and tracking tools — collects anonymous
                 usage data to help us improve the site.
               </p>
             </div>
@@ -200,18 +189,21 @@ function PreferencesModal({ onClose, blocking }: { onClose: () => void; blocking
         </div>
 
         <div className="flex gap-3">
-          <button
-            onClick={handleDecline}
-            className="flex-1 rounded-full border border-white/20 bg-transparent px-4 py-2.5 text-sm font-bold text-white/70 transition-colors hover:border-white/40 hover:text-white"
-          >
-            Decline
-          </button>
-          <button
-            onClick={handleAccept}
-            className="flex-1 rounded-full bg-emerald-500 px-4 py-2.5 text-sm font-bold text-black transition-colors hover:bg-emerald-400"
-          >
-            Accept All
-          </button>
+          {isActive ? (
+            <button
+              onClick={handleOptOut}
+              className="flex-1 rounded-full border border-white/20 bg-transparent px-4 py-2.5 text-sm font-bold text-white/70 transition-colors hover:border-white/40 hover:text-white"
+            >
+              Opt Out
+            </button>
+          ) : (
+            <button
+              onClick={handleOptIn}
+              className="flex-1 rounded-full bg-emerald-500 px-4 py-2.5 text-sm font-bold text-black transition-colors hover:bg-emerald-400"
+            >
+              Opt Back In
+            </button>
+          )}
         </div>
 
         <p className="mt-4 text-center text-xs text-white/30">
@@ -243,7 +235,7 @@ export function CookiePreferencesTrigger() {
   return (
     <>
       {showModal && (
-        <PreferencesModal onClose={() => setShowModal(false)} blocking={false} />
+        <PreferencesModal onClose={() => setShowModal(false)} />
       )}
     </>
   );
