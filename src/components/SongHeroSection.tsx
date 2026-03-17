@@ -2,6 +2,7 @@ import { Radio, Users, Calendar, ExternalLink } from "lucide-react";
 import { AlbumArtImage } from "./AlbumArtImage";
 import SaveSongButton from "./SaveSongButton";
 import { getYouTubeSearchUrl, getSpotifySearchUrl } from "@/lib/musicServiceLinks";
+import { artistUrl } from "@/lib/slugify";
 import Link from 'next/link';
 import { formatDistanceToNow } from "date-fns";
 
@@ -87,7 +88,7 @@ export const SongHeroSection = ({
               {/* Artist & Album */}
               <div className="space-y-2">
                 <Link 
-                  href={`/artist/${encodeURIComponent(artist)}`}
+                  href={artistUrl(artist)}
                   className="text-xl md:text-2xl text-white/90 hover:text-white font-semibold transition-colors inline-flex items-center gap-2 group/link"
                   aria-label={`View artist page for ${artist}`}
                 >

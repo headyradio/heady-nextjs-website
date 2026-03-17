@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { User, ExternalLink, Instagram, Twitter, Facebook, Radio, Calendar, TrendingUp, Music } from "lucide-react";
 import Link from 'next/link';
 import { useCombinedArtistData } from "@/hooks/useCombinedArtistData";
+import { artistUrl } from "@/lib/slugify";
 
 interface AboutTheArtistProps {
   artistName: string;
@@ -156,7 +157,7 @@ export const AboutTheArtist = ({ artistName, geniusData, aiContent, headyStats }
               </a>
             )}
             
-            <Link href={`/artist/${encodeURIComponent(artistName)}`}>
+            <Link href={artistUrl(artistName)}>
               <Button 
                 variant="outline" 
                 className="bg-white/10 border-white/20 text-white hover:bg-white/20 hover:text-white"

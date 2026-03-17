@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { TransmissionHistory } from '@/hooks/useTransmissionHistory';
 import { AlbumArtImage } from './AlbumArtImage';
 import { getYouTubeSearchUrl, getSpotifySearchUrl } from '@/lib/musicServiceLinks';
+import { songUrl, artistUrl } from '@/lib/slugify';
 import SaveSongButton from './SaveSongButton';
 
 interface TransmissionTimelineProps {
@@ -30,8 +31,8 @@ export const TransmissionTimeline = ({ transmissions }: TransmissionTimelineProp
         const playTime = format(localTime, 'h:mm a');
         const youtubeUrl = getYouTubeSearchUrl(transmission.artist, transmission.title);
         const spotifyUrl = getSpotifySearchUrl(transmission.artist, transmission.title);
-        const songPageUrl = `/song/${encodeURIComponent(transmission.artist)}/${encodeURIComponent(transmission.title)}`;
-        const artistPageUrl = `/artist/${encodeURIComponent(transmission.artist)}`;
+        const songPageUrl = songUrl(transmission.artist, transmission.title);
+        const artistPageUrl = artistUrl(transmission.artist);
 
         return (
           <div

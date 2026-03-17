@@ -1,6 +1,7 @@
 /**
  * Generate structured data (JSON-LD) for SEO
  */
+import { absoluteArtistUrl } from './slugify';
 
 export interface SongStructuredData {
   title: string;
@@ -36,7 +37,7 @@ export const generateSongStructuredData = (data: SongStructuredData) => {
     byArtist: {
       '@type': 'MusicGroup',
       name: data.artist,
-      url: `https://heady.fm/artist/${encodeURIComponent(data.artist)}`,
+      url: absoluteArtistUrl(data.artist),
     },
     ...(data.album && {
       inAlbum: {

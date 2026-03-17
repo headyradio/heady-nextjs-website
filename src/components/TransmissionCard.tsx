@@ -5,6 +5,7 @@ import { toZonedTime } from 'date-fns-tz';
 
 import { AlbumArtImage } from './AlbumArtImage';
 import { getYouTubeSearchUrl, getSpotifySearchUrl } from '@/lib/musicServiceLinks';
+import { songUrl, artistUrl } from '@/lib/slugify';
 import Link from 'next/link';
 import SaveSongButton from './SaveSongButton';
 
@@ -29,7 +30,7 @@ export const TransmissionCard = ({ transmission, index = 0 }: TransmissionCardPr
   const youtubeUrl = getYouTubeSearchUrl(transmission.artist, transmission.title);
   const spotifyUrl = getSpotifySearchUrl(transmission.artist, transmission.title);
   
-  const songPageUrl = `/song/${encodeURIComponent(transmission.artist)}/${encodeURIComponent(transmission.title)}`;
+  const songPageUrl = songUrl(transmission.artist, transmission.title);
 
   return (
     <div className="relative rounded-xl overflow-hidden cursor-pointer group animate-fade-in"
@@ -68,7 +69,7 @@ export const TransmissionCard = ({ transmission, index = 0 }: TransmissionCardPr
         
         {/* Artist Name - Clickable */}
         <Link 
-          href={`/artist/${encodeURIComponent(transmission.artist)}`}
+          href={artistUrl(transmission.artist)}
           className="font-semibold text-xs md:text-sm text-white/80 mb-2 md:mb-3 truncate hover:text-emerald-400 hover:opacity-100 transition-colors cursor-pointer block"
           onClick={(e) => e.stopPropagation()}
         >

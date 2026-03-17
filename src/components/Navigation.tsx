@@ -8,6 +8,7 @@ import { useGlobalAudioPlayer } from '@/contexts/AudioPlayerContext';
 import { AlbumArtImage } from '@/components/AlbumArtImage';
 import SaveSongButton from '@/components/SaveSongButton';
 import Link from 'next/link';
+import { songUrl } from '@/lib/slugify';
 import { useRouter, usePathname } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -297,7 +298,7 @@ const Navigation = () => {
                     className="h-7 w-7 text-white/60 hover:text-white"
                   />
                   <Link 
-                    href={`/song/${encodeURIComponent(nowPlaying.artist)}/${encodeURIComponent(nowPlaying.title)}`}
+                    href={songUrl(nowPlaying.artist, nowPlaying.title)}
                     className="text-white/60 hover:text-white transition-colors"
                     aria-label={`View song details for ${nowPlaying.title} by ${nowPlaying.artist}`}
                   >

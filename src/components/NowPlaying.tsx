@@ -6,6 +6,7 @@ import SaveSongButton from './SaveSongButton';
 import { Button } from './ui/button';
 import Link from 'next/link';
 import { getYouTubeSearchUrl, getSpotifySearchUrl } from '@/lib/musicServiceLinks';
+import { songUrl, artistUrl } from '@/lib/slugify';
 import { useGlobalAudioPlayer } from '@/contexts/AudioPlayerContext';
 import { useEffect } from 'react';
 
@@ -145,7 +146,7 @@ export const NowPlaying = ({ transmission, isLive = false }: NowPlayingProps) =>
             {/* Mobile: Centered Track Info */}
             <div className="text-center md:text-left mb-4 md:mb-6 overflow-hidden">
               <Link 
-                href={`/song/${encodeURIComponent(transmission.artist)}/${encodeURIComponent(transmission.title)}`}
+                href={songUrl(transmission.artist, transmission.title)}
                 className="group block"
               >
                 <h2 className="text-xl md:text-2xl lg:text-3xl font-black mb-2 md:mb-3 leading-tight text-white group-hover:text-primary transition-colors break-words">
@@ -154,7 +155,7 @@ export const NowPlaying = ({ transmission, isLive = false }: NowPlayingProps) =>
               </Link>
               
               <Link 
-                href={`/artist/${encodeURIComponent(transmission.artist)}`}
+                href={artistUrl(transmission.artist)}
                 className="block hover:text-primary transition-colors"
               >
                 <p className="text-base md:text-xl lg:text-2xl font-bold mb-2 md:mb-3 text-white/80 md:text-white/70">

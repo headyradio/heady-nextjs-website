@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { AlbumArtImage } from "./AlbumArtImage";
 import SaveSongButton from "./SaveSongButton";
 import { Skeleton } from "@/components/ui/skeleton";
+import { songUrl } from "@/lib/slugify";
 
 interface ArtistTopSong {
   title: string;
@@ -64,7 +65,7 @@ export const MoreFromArtist = ({ artistName, songs, isLoading }: MoreFromArtistP
             <div key={index} className="flex items-center gap-4 py-3 first:pt-0 last:pb-0 group">
               
               <Link
-                href={`/song/${encodeURIComponent(song.artist)}/${encodeURIComponent(song.title)}`}
+                href={songUrl(song.artist, song.title)}
                 className="flex items-center gap-4 flex-1 min-w-0"
               >
                 <div className="w-12 h-12 md:w-14 md:h-14 rounded-lg overflow-hidden flex-shrink-0 ring-1 ring-white/10 group-hover:ring-white/20 transition-all">

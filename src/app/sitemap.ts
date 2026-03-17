@@ -1,6 +1,8 @@
 import type { MetadataRoute } from 'next';
 import { sanityFetch } from '@/lib/sanity/client';
 import { sitemapArticlesQuery } from '@/lib/sanity/queries';
+import { createServerSupabaseClient } from '@/integrations/supabase/server';
+import { absoluteArtistUrl, absoluteSongUrl } from '@/lib/slugify';
 
 interface SitemapArticle {
   slug: string;
@@ -83,5 +85,41 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.8,
   }));
 
-  return [...staticPages, ...articlePages];
+  // Fetch distinct artists and songs from Supabase for dynamic pages
+  const supabase = createServerSupabaseClient();
+
+  // Get distinct artists
+  const { data: artistRows } = await supabase
+    .from('transmissions')
+    .select('artist')
+    .order('artist');
+
+  const uniqueArtists = [...new Set((artistRows ?? []).map((r) => r.artist))];
+  const artistPages: MetadataRoute.Sitemap = uniqueArtists.map((artist) => ({
+    url: absoluteArtistUrl(artist),
+    changeFrequency: 'weekly' as const,
+    priority: 0.5,
+  }));
+
+  // Get distinct artist+title combinations
+  const { data: songRows } = await supabase
+    .from('transmissions')
+    .select('artist, title')
+    .order('artist');
+
+  const songSet = new Set<string>();
+  const songPages: MetadataRoute.Sitemap = [];
+  (songRows ?? []).forEach((r) => {
+    const key = `${r.artist.toLowerCase()}|||${r.title.toLowerCase()}`;
+    if (!songSet.has(key)) {
+      songSet.add(key);
+      songPages.push({
+        url: absoluteSongUrl(r.artist, r.title),
+        changeFrequency: 'weekly' as const,
+        priority: 0.4,
+      });
+    }
+  });
+
+  return [...staticPages, ...articlePages, ...artistPages, ...songPages];
 }

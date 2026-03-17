@@ -1,6 +1,7 @@
 import { Users, Radio } from "lucide-react";
 import Link from 'next/link';
 import { useLastfmArtistData } from "@/hooks/useLastfmArtistData";
+import { artistUrl } from "@/lib/slugify";
 
 interface RelatedArtistCardProps {
   name: string;
@@ -27,7 +28,7 @@ export const RelatedArtistCard = ({ name, playCount, source }: RelatedArtistCard
 
   return (
     <Link 
-      href={`/artist/${encodeURIComponent(name)}`} 
+      href={artistUrl(name)} 
       className="group block"
       aria-label={`View artist page for ${name}`}
     >
