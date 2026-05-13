@@ -2,12 +2,6 @@ import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { searchTidalTrack } from '@/lib/tidal';
 
-// Use the service role key so reads/writes bypass RLS — never expose this client-side.
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!,
-);
-
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60; // Allow up to 60s for batch processing
 
@@ -19,6 +13,12 @@ export async function GET(request: Request) {
   if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
+
+  // Use the service role key so reads/writes bypass RLS — never expose this client-side.
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+  );
 
   // Only fetch songs that haven't been searched yet (tidal_track_id IS NULL means never attempted)
   // Songs that were searched but not found are marked tidal_track_id = 'SEARCHED'

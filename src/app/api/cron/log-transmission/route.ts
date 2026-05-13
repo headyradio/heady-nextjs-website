@@ -5,12 +5,6 @@ import { easternToUtc } from '@/utils/easternToUtc';
 
 const RADIOBOSS_API_URL = process.env.RADIOBOSS_URL!;
 
-// Use the service role key so writes bypass RLS — never expose this client-side.
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!,
-);
-
 interface RadioBossTrack {
   tracktitle: string;
   trackartist: string;
@@ -39,6 +33,12 @@ export async function GET(request: Request) {
   if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
+
+  // Use the service role key so writes bypass RLS — never expose this client-side.
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+  );
 
   try {
     // Fetch current data from RadioBoss
