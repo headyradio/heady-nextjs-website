@@ -126,7 +126,7 @@ export function FeaturedOnDemandClient() {
             </h2>
           </div>
           <p className="text-white/70 text-lg leading-relaxed font-medium">
-            Shows and mixtapes from HEADY Radio — listen anytime, on your schedule.
+            Now, you can listen to your favorite HEADY shows and mixtapes whenever, wherever.
           </p>
         </div>
 

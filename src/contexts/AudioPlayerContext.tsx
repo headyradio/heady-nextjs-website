@@ -23,6 +23,12 @@ const AudioPlayerContext = React.createContext<AudioPlayerContextValue | undefin
 
 const STREAM_URL = 'https://streams.radiomast.io/3049eeff-028f-4acb-a907-dc90fe19f828';
 
+// Append a cache-busting timestamp so each play() opens a fresh HTTP
+// connection rather than resuming any browser-buffered stream segment.
+// Live radio must always join at "now"; a stale buffer would replay
+// audio from when the user originally hit play.
+const buildFreshStreamUrl = () => `${STREAM_URL}?_=${Date.now()}`;
+
 export const AudioPlayerProvider = ({ children }: { children: React.ReactNode }) => {
   const [state, setState] = React.useState<AudioPlayerState>({
     isPlaying: false,
@@ -45,17 +51,17 @@ export const AudioPlayerProvider = ({ children }: { children: React.ReactNode })
     if (!audioRef.current) {
       const audio = new Audio();
       
-      // Minimal configuration for cleanest playback path
-      // Use 'metadata' instead of 'none' to allow initial connection
-      // 'none' can prevent the audio element from being ready to play
-      audio.preload = 'metadata';
-      
+      // Do not preload anything until the user explicitly hits play.
+      // A live stream must always start from "now"; pre-buffering on
+      // mount would either waste bandwidth or cause stale playback when
+      // play() resumes the already-buffered segment.
+      audio.preload = 'none';
+
       // RadioMast streams typically need CORS for cross-origin requests
       audio.crossOrigin = 'anonymous';
-      
-      // Set source
-      audio.src = STREAM_URL;
-      
+
+      // Source is set fresh on every play() call (see ensureStreamSource).
+
       // Start at full volume (1.0) - let OS handle system volume
       audio.volume = 1.0;
       
@@ -186,8 +192,10 @@ export const AudioPlayerProvider = ({ children }: { children: React.ReactNode })
   }, []);
 
   const ensureStreamSource = () => {
-    if (audioRef.current && !audioRef.current.src) {
-      audioRef.current.src = STREAM_URL;
+    if (audioRef.current) {
+      // Always assign a fresh URL so the browser opens a new connection
+      // and joins the live stream at the current moment.
+      audioRef.current.src = buildFreshStreamUrl();
     }
   };
 
@@ -202,14 +210,12 @@ export const AudioPlayerProvider = ({ children }: { children: React.ReactNode })
       console.log('Play initiated - setting connecting state');
       setState(prev => ({ ...prev, connectionStatus: 'connecting', isBuffering: true, hasUserInteracted: true, isPlaying: false }));
       
-      // Load the audio if it hasn't been loaded yet
-      // This is necessary for streams with preload='metadata'
-      if (!hasLoadedRef.current) {
-        audioRef.current.load();
-        hasLoadedRef.current = true;
-        // Wait a moment for load to start
-        await new Promise(resolve => setTimeout(resolve, 100));
-      }
+      // Force a load() against the freshly-assigned src so the browser
+      // discards any prior buffered data and re-opens the HTTP connection.
+      audioRef.current.load();
+      hasLoadedRef.current = true;
+      // Wait a moment for load to start before invoking play()
+      await new Promise(resolve => setTimeout(resolve, 100));
       
       // Store the play promise so we can track if it gets aborted
       const playPromise = audioRef.current.play();
@@ -238,14 +244,13 @@ export const AudioPlayerProvider = ({ children }: { children: React.ReactNode })
         isBuffering: false 
       }));
       
-      // If play fails, try loading first then playing
+      // If play fails, refresh the src and reload before retrying so
+      // we don't replay a half-buffered stream.
       setTimeout(() => {
         if (audioRef.current) {
-          // Only reload if we haven't loaded yet
-          if (!hasLoadedRef.current) {
-            audioRef.current.load();
-            hasLoadedRef.current = true;
-          }
+          ensureStreamSource();
+          audioRef.current.load();
+          hasLoadedRef.current = true;
           audioRef.current.play().catch(e => {
             // Also ignore AbortError on retry
             if (e instanceof Error && e.name === 'AbortError') {

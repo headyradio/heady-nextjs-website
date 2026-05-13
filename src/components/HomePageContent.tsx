@@ -242,10 +242,10 @@ const transmissions = historyData
         </div>
       </section>
 
-      {/* ===== SECTION 2.5: HEADYZINE ===== */}
+      {/* ===== SECTION 2.5: ON-DEMAND ===== */}
       <section className="hidden md:block py-4 lg:py-6">
         <div className="px-4">
-          <FeaturedArticlesClient />
+          <FeaturedOnDemandClient />
         </div>
       </section>
 
@@ -283,10 +283,10 @@ const transmissions = historyData
         </div>
       </section>
 
-      {/* ===== SECTION 5: ON-DEMAND ===== */}
+      {/* ===== SECTION 5: HEADYZINE ===== */}
       <section className="hidden md:block py-4 lg:py-6">
         <div className="px-4">
-          <FeaturedOnDemandClient />
+          <FeaturedArticlesClient />
         </div>
       </section>
 
