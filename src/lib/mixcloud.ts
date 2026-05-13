@@ -47,9 +47,18 @@ export function classifyCloudcast(cloudcast: MixcloudCloudcast): ClassifiedCloud
   let category: CloudcastCategory = 'MIXTAPE';
   let genre: string | undefined;
 
-  if (name.includes('NIGHT TREATS') || name.includes('JOHAN') || name.includes('LYAH')) {
+  if (
+    name.includes('NIGHT TREATS') ||
+    name.includes('JOHAN') ||
+    name.includes('LYAH') ||
+    name.includes('WITHOUT CENSOR') ||
+    name.includes('PSYCH SURFING')
+  ) {
     category = 'SHOW';
-    genre = name.includes('NIGHT TREATS') ? 'Electronic' : 'Alt Rock & Indie';
+    if (name.includes('NIGHT TREATS')) genre = 'Electronic';
+    else if (name.includes('WITHOUT CENSOR')) genre = 'Podcast';
+    else if (name.includes('PSYCH SURFING')) genre = 'Psychedelic';
+    else genre = 'Alt Rock & Indie';
   }
 
   return { ...cloudcast, category, genre };
