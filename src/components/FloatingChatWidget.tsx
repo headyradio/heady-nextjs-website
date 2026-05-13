@@ -5,11 +5,16 @@ import { usePathname } from 'next/navigation';
 import { X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { LiveChat } from '@/components/LiveChat';
+import { useMixcloudPlayer } from '@/contexts/MixcloudPlayerContext';
 
 type WidgetState = 'minimized' | 'active';
 
 export const FloatingChatWidget = () => {
   const pathname = usePathname();
+  const { isLoaded: mixcloudLoaded, currentKey: mixcloudKey } = useMixcloudPlayer();
+  const isOnDemandPlaying = mixcloudLoaded && !!mixcloudKey;
+  // Lift above the 68px-tall Mixcloud mini player on desktop when on-demand is active
+  const desktopBottom = isOnDemandPlaying ? 'md:bottom-24' : 'md:bottom-8';
   const [state, setState] = useState<WidgetState>('minimized');
   const [hasInteracted, setHasInteracted] = useState(() => {
     if (typeof window !== 'undefined') {
@@ -49,7 +54,7 @@ export const FloatingChatWidget = () => {
           setState('active');
           markAsInteracted();
         }}
-        className="fixed bottom-24 right-4 md:bottom-8 md:right-8 h-12 shadow-2xl transition-all duration-300 z-50 hover:scale-105 hover:brightness-110 px-6 rounded-full flex items-center gap-3 bg-emerald-500 hover:bg-emerald-400 text-black border-2 border-emerald-400/50"
+        className={`fixed bottom-24 right-4 ${desktopBottom} md:right-8 h-12 shadow-2xl transition-all duration-300 z-50 hover:scale-105 hover:brightness-110 px-6 rounded-full flex items-center gap-3 bg-emerald-500 hover:bg-emerald-400 text-black border-2 border-emerald-400/50`}
         aria-label="Open live chat"
       >
         <span className="relative flex h-3 w-3">
@@ -62,7 +67,7 @@ export const FloatingChatWidget = () => {
   }
 
   return (
-    <div className="fixed bottom-24 right-4 md:bottom-8 md:right-8 w-[90vw] max-w-[400px] h-[60vh] md:h-[600px] flex flex-col z-50 animate-in slide-in-from-bottom-10 fade-in duration-200">
+    <div className={`fixed bottom-24 right-4 ${desktopBottom} md:right-8 w-[90vw] max-w-[400px] h-[60vh] md:h-[600px] flex flex-col z-50 animate-in slide-in-from-bottom-10 fade-in duration-200`}>
       {/* Floating Close Button outside the container */}
       <Button 
         variant="secondary" 
