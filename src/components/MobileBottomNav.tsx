@@ -1,6 +1,6 @@
 'use client';
 
-import { Radio, Heart, History, Newspaper } from 'lucide-react';
+import { Radio, History, Newspaper, CassetteTape } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
@@ -11,6 +11,8 @@ const ACTIVE_TAB_CLASSES =
 const INACTIVE_TAB_CLASSES = 'text-white/60 hover:bg-white/10 hover:text-white/80';
 const TAB_BASE_CLASSES =
   'flex flex-col items-center justify-center gap-0.5 flex-1 h-14 transition-all relative rounded-lg';
+
+type ActiveTab = MobileTab | 'on-demand' | 'zine' | null;
 
 export const MobileBottomNav = () => {
   const pathname = usePathname();
@@ -24,14 +26,17 @@ export const MobileBottomNav = () => {
 
   const isHomePage = pathname === '/';
   const isZinePage = pathname?.startsWith('/headyzine');
+  const isOnDemandPage = pathname?.startsWith('/on-demand');
 
-  // The Zine tab is "active" purely based on URL; the other tabs reflect
-  // homepage state (and have no active state when the user is on another page).
-  const activeTab: MobileTab | 'zine' | null = isZinePage
-    ? 'zine'
-    : isHomePage
-      ? tab
-      : null;
+  // On-Demand and Zine are URL-driven; the other tabs reflect homepage state
+  // and have no active state once the user has navigated away from `/`.
+  const activeTab: ActiveTab = isOnDemandPage
+    ? 'on-demand'
+    : isZinePage
+      ? 'zine'
+      : isHomePage
+        ? tab
+        : null;
 
   const handleTabClick = (next: MobileTab) => {
     setTab(next);
@@ -75,6 +80,22 @@ export const MobileBottomNav = () => {
         </button>
 
         <Link
+          href="/on-demand"
+          aria-label="On-Demand - Browse HEADY shows and mixtapes"
+          aria-current={isOnDemandPage ? 'page' : undefined}
+          className={cn(
+            TAB_BASE_CLASSES,
+            activeTab === 'on-demand' ? ACTIVE_TAB_CLASSES : INACTIVE_TAB_CLASSES
+          )}
+        >
+          <CassetteTape
+            className={cn('h-4 w-4', activeTab === 'on-demand' && 'scale-110')}
+            aria-hidden="true"
+          />
+          <span className="text-[9px] font-bold uppercase tracking-wide">On-Demand</span>
+        </Link>
+
+        <Link
           href="/headyzine"
           aria-label="Zine - Read the HEADY Zine"
           aria-current={isZinePage ? 'page' : undefined}
@@ -86,23 +107,6 @@ export const MobileBottomNav = () => {
           <Newspaper className={cn('h-4 w-4', activeTab === 'zine' && 'scale-110')} aria-hidden="true" />
           <span className="text-[9px] font-bold uppercase tracking-wide">Zine</span>
         </Link>
-
-        <button
-          onClick={() => handleTabClick('support')}
-          aria-label="Support - Support HEADY.FM"
-          aria-selected={activeTab === 'support'}
-          role="tab"
-          className={cn(
-            TAB_BASE_CLASSES,
-            activeTab === 'support' ? ACTIVE_TAB_CLASSES : INACTIVE_TAB_CLASSES
-          )}
-        >
-          <Heart
-            className={cn('h-4 w-4', activeTab === 'support' && 'scale-110 fill-current')}
-            aria-hidden="true"
-          />
-          <span className="text-[9px] font-bold uppercase tracking-wide">Support</span>
-        </button>
       </div>
     </nav>
   );
