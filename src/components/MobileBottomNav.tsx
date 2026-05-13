@@ -28,7 +28,9 @@ export const MobileBottomNav = ({ onTabChange, activeTab = 'player' }: MobileBot
           role="tab"
           className={cn(
             "flex flex-col items-center justify-center gap-0.5 flex-1 h-14 transition-all relative rounded-lg",
-            activeTab === 'player' ? "text-primary bg-primary/20" : "text-white/60 hover:bg-white/10 hover:text-white/80"
+            activeTab === 'player'
+              ? "text-white bg-white/5 after:absolute after:top-0 after:left-1/2 after:-translate-x-1/2 after:h-0.5 after:w-8 after:bg-primary after:rounded-b-full"
+              : "text-white/60 hover:bg-white/10 hover:text-white/80"
           )}
         >
           <Radio className={cn("h-4 w-4", activeTab === 'player' && "scale-110")} aria-hidden="true" />
@@ -42,7 +44,9 @@ export const MobileBottomNav = ({ onTabChange, activeTab = 'player' }: MobileBot
           role="tab"
           className={cn(
             "flex flex-col items-center justify-center gap-0.5 flex-1 h-14 transition-all relative rounded-lg",
-            activeTab === 'history' ? "text-primary bg-primary/20" : "text-white/60 hover:bg-white/10 hover:text-white/80"
+            activeTab === 'history'
+              ? "text-white bg-white/5 after:absolute after:top-0 after:left-1/2 after:-translate-x-1/2 after:h-0.5 after:w-8 after:bg-primary after:rounded-b-full"
+              : "text-white/60 hover:bg-white/10 hover:text-white/80"
           )}
         >
           <History className={cn("h-4 w-4", activeTab === 'history' && "scale-110")} aria-hidden="true" />
@@ -68,7 +72,9 @@ export const MobileBottomNav = ({ onTabChange, activeTab = 'player' }: MobileBot
           role="tab"
           className={cn(
             "flex flex-col items-center justify-center gap-0.5 flex-1 h-14 transition-all relative rounded-lg",
-            activeTab === 'support' ? "text-primary bg-primary/20" : "text-white/60 hover:bg-white/10 hover:text-white/80"
+            activeTab === 'support'
+              ? "text-white bg-white/5 after:absolute after:top-0 after:left-1/2 after:-translate-x-1/2 after:h-0.5 after:w-8 after:bg-primary after:rounded-b-full"
+              : "text-white/60 hover:bg-white/10 hover:text-white/80"
           )}
         >
           <Heart className={cn("h-4 w-4", activeTab === 'support' && "scale-110 fill-current")} aria-hidden="true" />
