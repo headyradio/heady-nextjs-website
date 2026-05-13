@@ -14,7 +14,8 @@ const loadCachedData = (): RadioBossData | null => {
       const parsed = JSON.parse(cached);
       // Check if cache is less than 5 minutes old
       if (parsed.lastUpdate && Date.now() - new Date(parsed.lastUpdate).getTime() < 5 * 60 * 1000) {
-        return parsed;
+        // JSON.stringify serializes Date to string — rehydrate it back to Date.
+        return { ...parsed, lastUpdate: new Date(parsed.lastUpdate) };
       }
     }
   } catch (err) {
@@ -154,8 +155,13 @@ export const useRadioBoss = (
   
   // Track data changes to avoid unnecessary re-renders
   const lastDataRef = useRef<string | null>(null);
+  // In-flight guard — prevents concurrent fetches without depending on isLoading state,
+  // which would cause the polling interval to be torn down and recreated on every poll.
+  const isFetchingRef = useRef(false);
 
   const fetchRadioData = useCallback(async () => {
+    if (isFetchingRef.current) return;
+    isFetchingRef.current = true;
     try {
       const response = await fetch(RADIOBOSS_API_URL);
       if (!response.ok) {
@@ -163,24 +169,17 @@ export const useRadioBoss = (
       }
 
       const apiData = await response.json();
-      
-      // Quick check if data actually changed based on our Next.js API shape
-      const dataHash = JSON.stringify({
-        current: apiData.nowPlaying?.title,
-      });
-      
-      if (lastDataRef.current === dataHash && !isLoading) {
-        // Data hasn't changed, skip update
+
+      // Skip update if current track hasn't changed
+      const dataHash = JSON.stringify({ current: apiData.nowPlaying?.title });
+      if (lastDataRef.current === dataHash) {
         return;
       }
-      
       lastDataRef.current = dataHash;
-      setIsLoading(true);
+
       setError(null);
 
       const nowPlaying = apiData.nowPlaying as Transmission | null;
-
-      // Use recent tracks from the API (the server-side poller keeps this fresh)
       const recentTracks: Transmission[] = (apiData.recentTracks || []) as Transmission[];
 
       const newData = {
@@ -191,17 +190,18 @@ export const useRadioBoss = (
         isLive: apiData.isLive ?? !!nowPlaying,
         lastUpdate: new Date(),
       };
-      
+
       setData(newData);
-      saveCachedData(newData); // Save to cache
+      saveCachedData(newData);
       setIsInitialized(true);
+      setIsLoading(false);
     } catch (err) {
       console.error('Error fetching radio data:', err);
       setError(err instanceof Error ? err.message : 'Failed to fetch radio data');
     } finally {
-      setIsLoading(false);
+      isFetchingRef.current = false;
     }
-  }, [isLoading]);
+  }, []); // Stable reference — uses refs for guards, no state in deps
 
   const disabled = options?.disabled ?? false;
 

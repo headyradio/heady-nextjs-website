@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { easternToUtc } from '@/utils/easternToUtc';
 
-const RADIOBOSS_API_URL = 'https://c22.radioboss.fm/api/info/364?key=FZPFZ5DNHQOP';
+const RADIOBOSS_API_URL = process.env.RADIOBOSS_URL!;
 
 // In-memory artwork cache: artist+title → artwork URL (persists across polls)
 // Only caches successful lookups — failed/null results are retried later

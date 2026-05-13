@@ -9,7 +9,9 @@ export const client = createClient({
   projectId,
   dataset,
   apiVersion,
-  useCdn: false,
+  // CDN enabled for published content — improves latency globally.
+  // Use useCdn: false only in preview/draft contexts.
+  useCdn: true,
 });
 
 const builder = imageUrlBuilder(client);

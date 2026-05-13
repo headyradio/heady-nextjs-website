@@ -86,8 +86,8 @@ export const FeaturedCard = () => {
             size="lg" 
             className="bg-white text-black font-black text-lg px-8 py-6 rounded-full border-4 border-white/40 shadow-2xl transition-all duration-300 hover:scale-105 hover:bg-white/90 hover:shadow-[0_0_30px_rgba(255,255,255,0.3)]"
           >
-            <Link href="/shows">
-              Explore Shows
+            <Link href="/shows/night-treats">
+              Listen to Night Treats On-Demand
             </Link>
           </Button>
         </div>

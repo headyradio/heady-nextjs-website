@@ -38,6 +38,8 @@ export const AudioPlayerProvider = ({ children }: { children: React.ReactNode })
   const reconnectTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
   const reconnectAttemptsRef = React.useRef(0);
   const hasLoadedRef = React.useRef(false);
+  // Ref that always mirrors isPlaying — avoids stale closure in event callbacks.
+  const isPlayingRef = React.useRef(false);
 
   React.useEffect(() => {
     if (!audioRef.current) {
@@ -87,7 +89,7 @@ export const AudioPlayerProvider = ({ children }: { children: React.ReactNode })
         if (reconnectAttemptsRef.current < 3) {
           reconnectAttemptsRef.current++;
           reconnectTimeoutRef.current = setTimeout(() => {
-            if (audioRef.current && state.isPlaying) {
+            if (audioRef.current && isPlayingRef.current) {
               console.log('Attempting to reconnect audio stream...');
               setState(prev => ({ ...prev, connectionStatus: 'connecting', isBuffering: true }));
               // Don't call load() - just retry play() to avoid re-buffering
@@ -117,18 +119,20 @@ export const AudioPlayerProvider = ({ children }: { children: React.ReactNode })
 
       const handlePlaying = () => {
         console.log('Audio playing event fired - stream is now playing');
-        setState(prev => ({ 
-          ...prev, 
-          isPlaying: true, 
-          error: null, 
-          connectionStatus: 'streaming', 
-          isBuffering: false 
+        isPlayingRef.current = true;
+        setState(prev => ({
+          ...prev,
+          isPlaying: true,
+          error: null,
+          connectionStatus: 'streaming',
+          isBuffering: false
         }));
         reconnectAttemptsRef.current = 0;
       };
 
       const handlePause = () => {
         if (audioRef.current && !audioRef.current.ended) {
+          isPlayingRef.current = false;
           setState(prev => ({ ...prev, isPlaying: false, connectionStatus: 'idle', isBuffering: false }));
         }
       };
@@ -257,6 +261,7 @@ export const AudioPlayerProvider = ({ children }: { children: React.ReactNode })
 
   const stop = () => {
     if (!audioRef.current) return;
+    isPlayingRef.current = false;
     // Fully stop and unload stream
     audioRef.current.pause();
     audioRef.current.removeAttribute('src');

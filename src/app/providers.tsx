@@ -3,6 +3,8 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AudioPlayerProvider } from "@/contexts/AudioPlayerContext";
+import { MixcloudPlayerProvider } from "@/contexts/MixcloudPlayerContext";
+import { MixcloudMiniPlayer } from "@/components/mixcloud/MixcloudMiniPlayer";
 import { ThemeProvider } from "next-themes";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -35,9 +37,12 @@ export function Providers({ children }: { children: React.ReactNode }) {
       >
         <TooltipProvider>
           <AudioPlayerProvider>
-            {children}
-            <Toaster />
-            <Sonner />
+            <MixcloudPlayerProvider>
+              {children}
+              <MixcloudMiniPlayer />
+              <Toaster />
+              <Sonner />
+            </MixcloudPlayerProvider>
           </AudioPlayerProvider>
         </TooltipProvider>
       </ThemeProvider>

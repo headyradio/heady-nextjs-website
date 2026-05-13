@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react';
 import { type InitialServerData } from '@/hooks/useRadioBoss';
 import { RadioBossProvider, useRadioBossContext } from '@/contexts/RadioBossContext';
 import { useTransmissionHistory } from '@/hooks/useTransmissionHistory';
-import { useHotSongs } from '@/hooks/useHotSongs';
 import { isStationIdTrack } from '@/utils/stationFiltering';
 import Navigation from '@/components/Navigation';
 import { VideoHero } from '@/components/VideoHero';
@@ -28,6 +27,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
 import { RefreshCw } from 'lucide-react';
 import { FeaturedArticlesClient } from '@/components/FeaturedArticlesClient';
+import { FeaturedOnDemandClient } from '@/components/FeaturedOnDemandClient';
 import { ManageCookiePreferencesLink } from '@/components/CookieConsentBanner';
 
 interface HomePageContentProps {
@@ -43,17 +43,13 @@ export function HomePageContent({ initialData }: HomePageContentProps) {
 }
 
 function HomePageContentInner() {
-  const [mobileTab, setMobileTab] = useState<'player' | 'history' | 'hot40' | 'zine' | 'support'>('player');
+  const [mobileTab, setMobileTab] = useState<'player' | 'history' | 'zine' | 'support'>('player');
   const { nowPlaying, isLive, isLoading, error } = useRadioBossContext()!;
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedDate, setSelectedDate] = useState('all');
   const [selectedHour, setSelectedHour] = useState('all');
   const [displayLimit, setDisplayLimit] = useState(12);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
-  
-  // Hot Songs state
-  const [hotSongsDisplayLimit, setHotSongsDisplayLimit] = useState(10);
-  const [isLoadingMoreHot, setIsLoadingMoreHot] = useState(false);
   
   // Data hooks - fetch more data for mobile scrolling
   const { data: historyData, isLoading: historyLoading, isFetching, refetch } = useTransmissionHistory({
@@ -63,7 +59,6 @@ function HomePageContentInner() {
     selectedHour: 'all',
   });
 
-  const { data: hotSongsData, isLoading: hotSongsLoading } = useHotSongs(40);
 
   // Update browser tab title with currently playing song (skip station IDs/jingles
   // so crawlers always see the SEO title)
@@ -97,13 +92,7 @@ function HomePageContentInner() {
     setTimeout(() => setIsLoadingMore(false), 800);
   };
 
-  const handleLoadMoreHot = async () => {
-    setIsLoadingMoreHot(true);
-    setHotSongsDisplayLimit(prev => prev + 10);
-    setTimeout(() => setIsLoadingMoreHot(false), 800);
-  };
-
-  const transmissions = historyData
+const transmissions = historyData
     ?.filter(h => {
       const artist = h.artist?.toLowerCase() || '';
       const title = h.title?.toLowerCase() || '';
@@ -207,88 +196,6 @@ function HomePageContentInner() {
           </ScrollArea>
         )}
 
-        {mobileTab === 'hot40' && (
-          <ScrollArea className="h-[calc(100vh-180px)] bg-black">
-            <div className="px-4 py-6">
-            <h2 className="text-2xl font-black mb-4 uppercase tracking-tight text-white">HEADY HOT 40 🔥</h2>
-            <p className="mb-4 text-white/70">Top tracks from the last 7 days</p>
-
-            {/* Content */}
-            {hotSongsLoading ? (
-              <div className="space-y-4">
-                <div className="flex items-center justify-center gap-2 text-primary">
-                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
-                  <span className="font-bold">Loading hot tracks...</span>
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {Array.from({ length: 4 }).map((_, i) => (
-                    <TransmissionCardSkeleton key={i} />
-                  ))}
-                </div>
-              </div>
-            ) : hotSongsData && hotSongsData.length > 0 ? (
-              <>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {hotSongsData.slice(0, hotSongsDisplayLimit).map((song, index) => (
-                    <div key={song.id} className="relative pt-4">
-                      {/* Premium number badge with gradient and glow for mobile */}
-                      <div className="absolute top-0 left-2 z-20 flex items-center justify-center">
-                        <div className="relative">
-                          {/* Glow effect */}
-                          <div className="absolute inset-0 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-full blur-md opacity-60" />
-                          {/* Main badge */}
-                          <div className="relative bg-gradient-to-br from-emerald-400 via-emerald-500 to-emerald-600 text-black font-black text-sm w-8 h-8 flex items-center justify-center rounded-full border-2 border-white shadow-[0_4px_20px_rgba(16,185,129,0.4)]">
-                            {index + 1}
-                          </div>
-                        </div>
-                      </div>
-                      <TransmissionCard transmission={song} index={index} />
-                    </div>
-                  ))}
-                </div>
-                
-                {isLoadingMoreHot && (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4 animate-fade-in">
-                    {Array.from({ length: 4 }).map((_, i) => (
-                      <TransmissionCardSkeleton key={`loading-hot-${i}`} />
-                    ))}
-                  </div>
-                )}
-                
-                {hotSongsData.length > hotSongsDisplayLimit && (
-                  <div className="mt-6 text-center animate-fade-in">
-                    <Button
-                      onClick={handleLoadMoreHot}
-                      size="lg"
-                      variant="outline"
-                      className="font-bold px-8 group hover-scale w-full"
-                      disabled={isLoadingMoreHot}
-                    >
-                      {isLoadingMoreHot ? (
-                        <>
-                          <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-current mr-2"></div>
-                          Loading...
-                        </>
-                      ) : (
-                        <>
-                          Load More Hot Tracks
-                          <span className="ml-2 transition-transform group-hover:translate-y-0.5">↓</span>
-                        </>
-                      )}
-                    </Button>
-                  </div>
-                )}
-              </>
-            ) : (
-              <div className="border border-white/20 rounded-xl p-12 text-center bg-gray-900/50">
-                <p className="text-lg text-white/60">No hot tracks available yet</p>
-              </div>
-            )}
-            </div>
-          </ScrollArea>
-        )}
-
-        
         {mobileTab === 'support' && <MobileSupportTab />}
       </div>
 
@@ -300,7 +207,7 @@ function HomePageContentInner() {
       </section>
 
       {/* ===== SECTION 2: ON AIR NOW (with Experience Card) ===== */}
-      <section className="hidden md:block py-4 lg:py-6">
+      <section id="on-air-now" className="hidden md:block py-4 lg:py-6 scroll-mt-28">
         <div className="px-4">
           {error && (
             <div className="mb-8 p-6 rounded-xl bg-destructive/10 border-4 border-destructive">
@@ -376,21 +283,10 @@ function HomePageContentInner() {
         </div>
       </section>
 
-      {/* ===== SECTION 5: HOT 40 ===== */}
-      <section id="hot-40-section" className="hidden md:block py-4 lg:py-6">
+      {/* ===== SECTION 5: ON-DEMAND ===== */}
+      <section className="hidden md:block py-4 lg:py-6">
         <div className="px-4">
-          <div className="bg-gradient-to-br from-gray-900/80 via-gray-800/60 to-gray-900/80 p-8 rounded-2xl border border-white/10">
-            <SongCarousel
-              title="HEADY HOT 40 🔥"
-              subtitle="Top tracks from the last 7 days"
-              items={hotSongsData || []}
-              isLoading={hotSongsLoading}
-              viewAllLink="/hot-40"
-              viewAllText="Browse Full Chart"
-              numbered={true}
-              limit={20}
-            />
-          </div>
+          <FeaturedOnDemandClient />
         </div>
       </section>
 
@@ -404,7 +300,7 @@ function HomePageContentInner() {
               HEADY EXTRATERRESTRIAL RADIO
             </h3>
             <div className="pt-4 text-sm text-white/40 space-y-2">
-              <p>©2026 HEADY Radio, a Prospect Media property. All rights reserved.</p>
+              <p>©2026 HEADY Radio. All rights reserved.</p>
               <div className="flex items-center justify-center gap-4">
                 <a href="/privacy-policy" className="underline hover:text-white/60">Privacy Policy</a>
                 <ManageCookiePreferencesLink />

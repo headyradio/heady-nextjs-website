@@ -46,9 +46,11 @@ export const useTransmissionHistory = ({
       sevenDaysAgo.setHours(0, 0, 0, 0);
       query = query.gte('play_started_at', sevenDaysAgo.toISOString());
 
-      // Add search filter if provided
+      // Add search filter if provided.
+      // Strip characters that break PostgREST's or() filter syntax before interpolating.
       if (searchQuery) {
-        query = query.or(`title.ilike.%${searchQuery}%,artist.ilike.%${searchQuery}%`);
+        const safe = searchQuery.replace(/[(),]/g, '');
+        query = query.or(`title.ilike.%${safe}%,artist.ilike.%${safe}%`);
       }
 
       // Add date filter with proper timezone handling

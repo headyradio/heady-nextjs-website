@@ -63,53 +63,40 @@ const Navigation = () => {
           <div className="relative grid grid-cols-3 h-14 items-center">
             {/* Left: Navigation Links */}
             <div className="hidden md:flex items-center gap-1 justify-start">
-              <Link href="/headyzine">
-                <button 
-                  className={`px-4 py-2 text-sm font-medium transition-colors hover:text-white cursor-pointer ${
-                    isActiveLink('/headyzine') ? 'text-white' : 'text-white/70'
-                  }`}
+              <Link href="/#on-air-now">
+                <button
+                  className="px-4 py-2 text-sm font-medium whitespace-nowrap transition-colors hover:text-white cursor-pointer text-white/70"
                 >
-                  Zine
+                  Live
                 </button>
               </Link>
               <Link href="/playlist">
-                <button 
-                  className={`px-4 py-2 text-sm font-medium transition-colors hover:text-white cursor-pointer ${
+                <button
+                  className={`px-4 py-2 text-sm font-medium whitespace-nowrap transition-colors hover:text-white cursor-pointer ${
                     isActiveLink('/playlist') ? 'text-white' : 'text-white/70'
                   }`}
                 >
                   Playlist
                 </button>
               </Link>
-              <Link href="/hot-40">
-                <button 
-                  className={`px-4 py-2 text-sm font-medium transition-colors hover:text-white cursor-pointer ${
-                    isActiveLink('/hot-40') ? 'text-white' : 'text-white/70'
+              <Link href="/on-demand">
+                <button
+                  className={`px-4 py-2 text-sm font-medium whitespace-nowrap transition-colors hover:text-white cursor-pointer ${
+                    isActiveLink('/on-demand') ? 'text-white' : 'text-white/70'
                   }`}
                 >
-                  Hot 40
+                  On-Demand
                 </button>
               </Link>
-              <Link href="/shows">
-                <button 
-                  className={`px-4 py-2 text-sm font-medium transition-colors hover:text-white cursor-pointer ${
-                    isActiveLink('/shows') ? 'text-white' : 'text-white/70'
+              <Link href="/headyzine">
+                <button
+                  className={`px-4 py-2 text-sm font-medium whitespace-nowrap transition-colors hover:text-white cursor-pointer ${
+                    isActiveLink('/headyzine') ? 'text-white' : 'text-white/70'
                   }`}
                 >
-                  Shows
+                  Zine
                 </button>
               </Link>
-
-              <button 
-                className="px-4 py-2 text-sm font-medium text-white/70 transition-colors hover:text-white cursor-pointer"
-                onClick={() => {
-                  const event = new CustomEvent('open-live-chat');
-                  window.dispatchEvent(event);
-                }}
-                aria-label="Open live chat"
-              >
-                Live Chat
-              </button>
             </div>
 
             {/* Center: Logo — absolute on mobile (left col is hidden, breaking grid centering), static on desktop */}
@@ -411,9 +398,9 @@ const Navigation = () => {
 
             {/* Nav Links - Mobile */}
             <div className="grid grid-cols-2 gap-2">
-              <Link href="/headyzine" onClick={() => setMobileMenuOpen(false)}>
+              <Link href="/#on-air-now" onClick={() => setMobileMenuOpen(false)}>
                 <Button variant="outline" className="w-full h-10 text-sm bg-white/5 border-white/20 text-white hover:bg-white/10">
-                  Zine
+                  Live
                 </Button>
               </Link>
               <Link href="/playlist" onClick={() => setMobileMenuOpen(false)}>
@@ -421,14 +408,9 @@ const Navigation = () => {
                   Playlist
                 </Button>
               </Link>
-              <Link href="/hot-40" onClick={() => setMobileMenuOpen(false)}>
+              <Link href="/on-demand" onClick={() => setMobileMenuOpen(false)}>
                 <Button variant="outline" className="w-full h-10 text-sm bg-white/5 border-white/20 text-white hover:bg-white/10">
-                  Hot 40
-                </Button>
-              </Link>
-              <Link href="/shows" onClick={() => setMobileMenuOpen(false)}>
-                <Button variant="outline" className="w-full h-10 text-sm bg-white/5 border-white/20 text-white hover:bg-white/10">
-                  Shows
+                  On-Demand
                 </Button>
               </Link>
               <Link href="/headyzine" onClick={() => setMobileMenuOpen(false)}>
@@ -436,18 +418,6 @@ const Navigation = () => {
                   Zine
                 </Button>
               </Link>
-              <Button 
-                variant="outline" 
-                className="w-full h-10 text-sm bg-white/5 border-white/20 text-white hover:bg-white/10"
-                onClick={() => {
-                  const event = new CustomEvent('open-live-chat');
-                  window.dispatchEvent(event);
-                  setMobileMenuOpen(false);
-                }}
-                aria-label="Open live chat"
-              >
-                Live Chat
-              </Button>
             </div>
 
             {/* Support Button - Mobile */}

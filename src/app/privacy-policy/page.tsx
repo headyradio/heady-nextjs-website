@@ -18,7 +18,7 @@ export default function PrivacyPolicyPage() {
         <PrivacyPolicyContent />
 
         <div className="mt-16 border-t border-white/10 pt-8 text-center text-xs text-white/30">
-          <p className="mb-2">©2026 HEADY Radio, a Prospect Media property. All rights reserved.</p>
+          <p className="mb-2">©2026 HEADY Radio. All rights reserved.</p>
           <ManageCookiePreferencesLink />
         </div>
       </div>

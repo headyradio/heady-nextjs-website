@@ -3,12 +3,13 @@ import { createClient } from '@supabase/supabase-js';
 import { searchTidalTrack } from '@/lib/tidal';
 import { easternToUtc } from '@/utils/easternToUtc';
 
-const RADIOBOSS_API_URL = 'https://c22.radioboss.fm/api/info/364?key=FZPFZ5DNHQOP';
+const RADIOBOSS_API_URL = process.env.RADIOBOSS_URL!;
 
-// Server-side Supabase client
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
-const supabase = createClient(supabaseUrl, supabaseKey);
+// Use the service role key so writes bypass RLS — never expose this client-side.
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!,
+);
 
 interface RadioBossTrack {
   tracktitle: string;

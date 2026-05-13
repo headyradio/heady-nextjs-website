@@ -35,14 +35,9 @@ export function FeaturedArticlesClient() {
       {/* Promotional Header */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
         <div className="max-w-2xl">
-          <div className="flex items-center gap-3 mb-3">
-            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-widest bg-[hsl(150,55%,35%)] text-white">
-              NEW
-            </span>
-            <h2 className="text-3xl md:text-4xl font-black uppercase tracking-tight text-white">
-              Introducing HEADYZINE
-            </h2>
-          </div>
+          <h2 className="text-3xl md:text-4xl font-black uppercase tracking-tight text-white mb-3">
+            HEADYZINE
+          </h2>
           <p className="text-white/70 text-lg leading-relaxed font-medium">
             Music news, concert and tour dates, and stories about everything else worth caring about. It&apos;s a magazine with HEADY&apos;s signature element of surprise and edge.
           </p>
