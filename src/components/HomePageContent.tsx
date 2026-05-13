@@ -12,7 +12,7 @@ import { ExperienceCard } from '@/components/ExperienceCard';
 import { SupportSidebar } from '@/components/SupportSidebar';
 import { NowPlaying } from '@/components/NowPlaying';
 import { NowPlayingSkeleton } from '@/components/NowPlayingSkeleton';
-import { MobileBottomNav } from '@/components/MobileBottomNav';
+import { useMobileTab } from '@/contexts/MobileTabContext';
 import { MobileSupportTab } from '@/components/MobileSupportTab';
 import { FloatingChatWidget } from '@/components/FloatingChatWidget';
 import { DonationBanner } from '@/components/DonationBanner';
@@ -43,7 +43,7 @@ export function HomePageContent({ initialData }: HomePageContentProps) {
 }
 
 function HomePageContentInner() {
-  const [mobileTab, setMobileTab] = useState<'player' | 'history' | 'zine' | 'support'>('player');
+  const { tab: mobileTab, setTab: setMobileTab } = useMobileTab();
   const { nowPlaying, isLive, isLoading, error } = useRadioBossContext()!;
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedDate, setSelectedDate] = useState('all');
@@ -312,7 +312,6 @@ const transmissions = historyData
 
       <FloatingChatWidget />
       <DonationBanner />
-      <MobileBottomNav activeTab={mobileTab} onTabChange={setMobileTab} />
     </div>
   );
 }
