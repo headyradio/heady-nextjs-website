@@ -39,7 +39,7 @@ export function FeaturedArticlesClient() {
             HEADYZINE
           </h2>
           <p className="text-white/70 text-lg leading-relaxed font-medium">
-            Music news, concert and tour dates, and stories about everything else worth caring about. It&apos;s a magazine with HEADY&apos;s signature element of surprise and edge.
+            Music news, concert and tour dates, and stories about everything else worth caring about.
           </p>
         </div>
         
