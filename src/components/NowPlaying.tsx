@@ -3,7 +3,6 @@ import { Transmission } from '@/hooks/useRadioBoss';
 import { formatDistanceToNow } from 'date-fns';
 import { AlbumArtImage } from './AlbumArtImage';
 import SaveSongButton from './SaveSongButton';
-import { Button } from './ui/button';
 import Link from 'next/link';
 import { getYouTubeSearchUrl, getSpotifySearchUrl } from '@/lib/musicServiceLinks';
 import { songUrl, artistUrl } from '@/lib/slugify';
@@ -91,24 +90,8 @@ export const NowPlaying = ({ transmission, isLive = false }: NowPlayingProps) =>
                 className="w-full h-full object-cover"
                 fallbackClassName="w-full h-full bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center"
               />
-              {/* Desktop: Hover Play Button Overlay */}
-              <div className="hidden md:flex absolute inset-0 items-center justify-center bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity">
-                <Button
-                  onClick={audioPlayer.togglePlay}
-                  size="lg"
-                  variant="default"
-                  aria-label={audioPlayer.isPlaying || audioPlayer.connectionStatus === 'connecting' ? "Stop audio stream" : "Play audio stream"}
-                  className="w-20 h-20 rounded-full shadow-2xl hover:scale-110 transition-transform"
-                >
-                  {audioPlayer.isPlaying || audioPlayer.connectionStatus === 'connecting' ? (
-                    <Square className="h-10 w-10 text-white fill-white" aria-hidden="true" />
-                  ) : (
-                    <Play className="h-10 w-10 text-white fill-white" aria-hidden="true" />
-                  )}
-                </Button>
-              </div>
-              
-              <div className="md:hidden absolute inset-0 flex items-center justify-center">
+              {/* Unified play/stop button — same treatment on mobile and desktop */}
+              <div className="absolute inset-0 flex items-center justify-center">
                 <button
                   onClick={audioPlayer.togglePlay}
                   aria-label={audioPlayer.isPlaying || audioPlayer.connectionStatus === 'connecting' ? "Stop audio stream" : "Play audio stream"}
@@ -116,7 +99,6 @@ export const NowPlaying = ({ transmission, isLive = false }: NowPlayingProps) =>
                 >
                   {audioPlayer.connectionStatus === 'connecting' && !audioPlayer.isPlaying ? (
                     <div className="flex flex-col items-center justify-center gap-2 relative">
-                      {/* Cancel X button overlaid on spinner */}
                       <div className="animate-spin rounded-full h-12 w-12 border-4 border-white/30 border-t-white drop-shadow-lg" aria-hidden="true" />
                       <span className="text-[10px] text-white font-bold drop-shadow-lg uppercase tracking-wide">Tap to cancel</span>
                     </div>
