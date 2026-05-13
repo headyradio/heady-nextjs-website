@@ -1,9 +1,9 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
 import { searchTidalTrack } from '@/lib/tidal';
 import { easternToUtc } from '@/utils/easternToUtc';
 
 const RADIOBOSS_API_URL = process.env.RADIOBOSS_URL!;
+const EDGE_FUNCTION_URL = process.env.LOVABLE_LOG_TRANSMISSION_URL!;
 
 interface RadioBossTrack {
   tracktitle: string;
@@ -23,6 +23,30 @@ interface RadioBossCurrentTrack {
   LISTENERS?: string;
 }
 
+interface TransmissionRow {
+  title: string;
+  artist: string;
+  album: string | null;
+  play_started_at: string;
+  duration: string | null;
+  album_art_url: string | null;
+  genre: string | null;
+  year: string | null;
+  artwork_id: string | null;
+  listeners_count: number;
+}
+
+interface SongRow {
+  artist: string;
+  title: string;
+  album: string | null;
+  album_art_url: string | null;
+  tidal_track_id: string | null;
+  genre: string | null;
+  year: string | null;
+  duration: string | null;
+}
+
 export const dynamic = 'force-dynamic';
 
 export async function GET(request: Request) {
@@ -33,12 +57,6 @@ export async function GET(request: Request) {
   if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
-
-  // Use the service role key so writes bypass RLS — never expose this client-side.
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-  );
 
   try {
     // Fetch current data from RadioBoss
@@ -52,11 +70,7 @@ export async function GET(request: Request) {
     }
 
     const data = await response.json();
-    const logged: string[] = [];
-    const skipped: string[] = [];
-    const errors: string[] = [];
 
-    // Parse current track
     const currentTrack: RadioBossCurrentTrack | undefined = data.currenttrack_info?.['@attributes'];
     const recentTracks: RadioBossTrack[] = data.recent || [];
     const listeners = data.listeners || Number(currentTrack?.LISTENERS) || 0;
@@ -68,21 +82,10 @@ export async function GET(request: Request) {
       artworkUrl = `${artworkUrl}?t=${trackKey}`;
     }
 
-    // Collect all tracks to log (current + recent)
-    const tracksToLog: Array<{
-      title: string;
-      artist: string;
-      album: string | null;
-      play_started_at: string;
-      duration: string | null;
-      album_art_url: string | null;
-      genre: string | null;
-      year: string | null;
-      artwork_id: string | null;
-      listeners_count: number;
-    }> = [];
+    // Collect transmissions (current + recent)
+    const transmissions: TransmissionRow[] = [];
 
-    // Add current track — prefer recent[].started timestamp since LASTPLAYED is often stale
+    // Current track — prefer recent[].started timestamp since LASTPLAYED is often stale
     if (currentTrack?.TITLE && currentTrack?.ARTIST) {
       const matchingRecent = recentTracks.find(
         t => t.tracktitle === currentTrack.TITLE && t.trackartist === currentTrack.ARTIST
@@ -90,7 +93,7 @@ export async function GET(request: Request) {
       const rawTimestamp = matchingRecent?.started || currentTrack.LASTPLAYED || '';
       const playStartedAt = rawTimestamp ? easternToUtc(rawTimestamp) : new Date().toISOString();
 
-      tracksToLog.push({
+      transmissions.push({
         title: currentTrack.TITLE,
         artist: currentTrack.ARTIST,
         album: currentTrack.ALBUM || null,
@@ -104,15 +107,11 @@ export async function GET(request: Request) {
       });
     }
 
-    // Add recent tracks (convert Eastern Time to UTC)
-    // NOTE: RadioBoss artwork data is unreliable for recent tracks — both the
-    // artwork URL and artworkid often correspond to the *current* track rather
-    // than the actual recent track. We null out both album_art_url and artwork_id
-    // so AlbumArtImage falls through to the album-art edge function which
-    // looks up the correct art by artist+title.
+    // Recent tracks — RadioBoss artwork is unreliable for these; let the
+    // album-art edge function resolve by artist+title at read time.
     for (const track of recentTracks) {
       if (track.tracktitle && track.trackartist) {
-        tracksToLog.push({
+        transmissions.push({
           title: track.tracktitle,
           artist: track.trackartist,
           album: null,
@@ -127,111 +126,59 @@ export async function GET(request: Request) {
       }
     }
 
-    // Insert each track (skip duplicates via unique constraint on play_started_at + title + artist)
-    for (const track of tracksToLog) {
-      try {
-        const { error } = await supabase.from('transmissions').insert(track);
-
-        if (error) {
-          if (error.code === '23505') {
-            skipped.push(`${track.artist} - ${track.title}`);
-          } else {
-            errors.push(`${track.artist} - ${track.title}: ${error.message}`);
-          }
-        } else {
-          logged.push(`${track.artist} - ${track.title} @ ${track.play_started_at}`);
-        }
-      } catch (err) {
-        errors.push(`${track.artist} - ${track.title}: ${err}`);
-      }
-    }
-
-    // Upsert unique songs into the songs library + resolve artwork via TIDAL
-    const songsUpserted: string[] = [];
-    const songsSkipped: string[] = [];
-
-    // Deduplicate tracksToLog by artist+title to avoid redundant lookups
+    // Deduplicate by artist+title and resolve TIDAL artwork for the songs library
     const seenSongKeys = new Set<string>();
-    const uniqueSongs = tracksToLog.filter(track => {
-      const key = `${track.artist.toLowerCase()}|||${track.title.toLowerCase()}`;
-      if (seenSongKeys.has(key)) return false;
+    const songs: SongRow[] = [];
+
+    for (const t of transmissions) {
+      const key = `${t.artist.toLowerCase()}|||${t.title.toLowerCase()}`;
+      if (seenSongKeys.has(key)) continue;
       seenSongKeys.add(key);
-      return true;
-    });
 
-    for (const track of uniqueSongs) {
+      let albumArtUrl: string | null = null;
+      let tidalTrackId: string | null = null;
+      let albumName: string | null = t.album;
+
       try {
-        // Check if song already exists with artwork
-        const { data: existingSong } = await supabase
-          .from('songs')
-          .select('id, album_art_url')
-          .ilike('artist', track.artist)
-          .ilike('title', track.title)
-          .limit(1)
-          .single();
-
-        if (existingSong?.album_art_url) {
-          songsSkipped.push(`${track.artist} - ${track.title}`);
-          continue;
+        const tidalResult = await searchTidalTrack(t.artist, t.title);
+        if (tidalResult) {
+          albumArtUrl = tidalResult.albumArtUrl;
+          tidalTrackId = tidalResult.tidalTrackId;
+          albumName = tidalResult.album || t.album;
         }
-
-        // Resolve artwork via TIDAL API (only for new or artless songs)
-        let albumArtUrl: string | null = null;
-        let tidalTrackId: string | null = null;
-        let albumName: string | null = track.album;
-
-        try {
-          const tidalResult = await searchTidalTrack(track.artist, track.title);
-          if (tidalResult) {
-            albumArtUrl = tidalResult.albumArtUrl;
-            tidalTrackId = tidalResult.tidalTrackId;
-            albumName = tidalResult.album || track.album;
-          }
-        } catch (tidalErr) {
-          console.error(`[Cron] TIDAL lookup failed for ${track.artist} - ${track.title}:`, tidalErr);
-        }
-
-        if (existingSong) {
-          // Song exists but has no artwork — update it
-          await supabase
-            .from('songs')
-            .update({
-              album_art_url: albumArtUrl,
-              tidal_track_id: tidalTrackId,
-              album: albumName || undefined,
-              updated_at: new Date().toISOString(),
-            })
-            .eq('id', existingSong.id);
-        } else {
-          // New song — insert it
-          await supabase.from('songs').insert({
-            artist: track.artist,
-            title: track.title,
-            album: albumName,
-            album_art_url: albumArtUrl,
-            tidal_track_id: tidalTrackId,
-            genre: track.genre,
-            year: track.year,
-            duration: track.duration,
-          });
-        }
-
-        songsUpserted.push(`${track.artist} - ${track.title}${albumArtUrl ? ' (art found)' : ' (no art)'}`);
-      } catch (err) {
-        console.error(`[Cron] Song upsert failed: ${track.artist} - ${track.title}:`, err);
+      } catch (tidalErr) {
+        console.error(`[Cron] TIDAL lookup failed for ${t.artist} - ${t.title}:`, tidalErr);
       }
+
+      songs.push({
+        artist: t.artist,
+        title: t.title,
+        album: albumName,
+        album_art_url: albumArtUrl,
+        tidal_track_id: tidalTrackId,
+        genre: t.genre,
+        year: t.year,
+        duration: t.duration,
+      });
     }
 
-    return NextResponse.json({
-      success: true,
-      timestamp: new Date().toISOString(),
-      logged,
-      skipped,
-      errors,
-      totalTracksChecked: tracksToLog.length,
-      songsUpserted,
-      songsSkipped,
+    // Forward to the Lovable Edge Function which holds the service role key
+    const edgeResponse = await fetch(EDGE_FUNCTION_URL, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${process.env.CRON_SHARED_SECRET}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ transmissions, songs }),
     });
+
+    if (!edgeResponse.ok) {
+      const errorText = await edgeResponse.text();
+      throw new Error(`Edge Function ${edgeResponse.status}: ${errorText}`);
+    }
+
+    const result = await edgeResponse.json();
+    return NextResponse.json(result);
   } catch (error) {
     console.error('[Cron] Failed to log transmissions:', error);
     return NextResponse.json(
