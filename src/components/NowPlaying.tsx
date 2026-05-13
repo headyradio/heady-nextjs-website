@@ -95,7 +95,7 @@ export const NowPlaying = ({ transmission, isLive = false }: NowPlayingProps) =>
                 <button
                   onClick={audioPlayer.togglePlay}
                   aria-label={audioPlayer.isPlaying || audioPlayer.connectionStatus === 'connecting' ? "Stop audio stream" : "Play audio stream"}
-                  className="w-28 h-28 rounded-full bg-background/20 backdrop-blur-md border-4 border-primary/80 hover:border-primary flex items-center justify-center shadow-2xl transition-all active:scale-95"
+                  className="w-28 h-28 rounded-full bg-background/20 backdrop-blur-md border-4 border-primary/80 hover:border-primary flex items-center justify-center shadow-2xl transition-all duration-200 ease-out active:scale-95 motion-safe:md:hover:scale-105 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary/60 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
                 >
                   {audioPlayer.connectionStatus === 'connecting' && !audioPlayer.isPlaying ? (
                     <div className="flex flex-col items-center justify-center gap-2 relative">
