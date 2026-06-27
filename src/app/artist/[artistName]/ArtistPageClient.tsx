@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useArtistDetails, useArtistContent } from "@/hooks/useArtistDetails";
 import { useCombinedArtistData } from "@/hooks/useCombinedArtistData";
 import Navigation from "@/components/Navigation";
+import { Footer } from "@/components/Footer";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Music, Clock, Radio, Users, Disc, TrendingUp, Calendar, Sparkles, Globe } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
@@ -289,9 +290,7 @@ export default function ArtistPageClient({ artistName }: ArtistPageClientProps) 
         </div>
       </div>
 
-      <footer className="container mx-auto px-4 py-12 border-t border-white/10 text-center text-sm text-white/50">
-        <p>©2026 HEADY Radio. All rights reserved.</p>
-      </footer>
+      <Footer />
     </div>
   );
 }

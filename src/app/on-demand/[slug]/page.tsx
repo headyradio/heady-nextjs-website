@@ -5,6 +5,7 @@ import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { ChevronLeft, Clock, Play } from 'lucide-react';
 import Navigation from '@/components/Navigation';
+import { Footer } from '@/components/Footer';
 import {
   fetchCloudcastDetail,
   fetchTracklist,
@@ -222,6 +223,7 @@ export default function CloudcastDetailPage() {
           <div className="mt-8 mb-12" />
         )}
       </div>
+      <Footer />
     </div>
   );
 }

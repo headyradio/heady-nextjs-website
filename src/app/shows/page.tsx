@@ -1,6 +1,7 @@
 "use client";
 
 import Navigation from "@/components/Navigation";
+import { Footer } from "@/components/Footer";
 import { Radio, Calendar, Clock } from "lucide-react";
 import Image from "next/image";
 
@@ -105,9 +106,7 @@ export default function ShowsPage() {
         </div>
       </div>
       
-      <footer className="container mx-auto px-4 py-12 border-t border-white/10 text-center text-sm text-white/50 mt-12">
-        <p>©2026 HEADY Radio. All rights reserved.</p>
-      </footer>
+      <Footer />
     </div>
   );
 }

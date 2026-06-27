@@ -1,6 +1,7 @@
 "use client";
 
 import Navigation from "@/components/Navigation";
+import { Footer } from "@/components/Footer";
 import { CheckCircle, Heart } from "lucide-react";
 import Link from "next/link";
 
@@ -33,9 +34,7 @@ export default function DonationSuccessPage() {
         </div>
       </div>
       
-      <footer className="container mx-auto px-4 py-12 border-t border-white/10 text-center text-sm text-white/50">
-        <p>©2026 HEADY Radio. All rights reserved.</p>
-      </footer>
+      <Footer />
     </div>
   );
 }

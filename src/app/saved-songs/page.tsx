@@ -3,6 +3,7 @@
 import { useAuth } from "@/hooks/useAuth";
 import { useSavedSongs } from "@/hooks/useSavedSongs";
 import Navigation from "@/components/Navigation";
+import { Footer } from "@/components/Footer";
 import { TransmissionCard } from "@/components/TransmissionCard";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useRouter } from "next/navigation";
@@ -76,9 +77,7 @@ export default function SavedSongsPage() {
         )}
       </div>
       
-      <footer className="container mx-auto px-4 py-12 border-t border-white/10 text-center text-sm text-white/50">
-        <p>©2026 HEADY Radio. All rights reserved.</p>
-      </footer>
+      <Footer />
     </div>
   );
 }

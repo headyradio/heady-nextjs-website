@@ -4,6 +4,7 @@ import * as React from 'react';
 import Link from 'next/link';
 import { Play, Clock } from 'lucide-react';
 import Navigation from '@/components/Navigation';
+import { Footer } from '@/components/Footer';
 import { fetchCloudcasts, classifyCloudcast, formatDuration, formatDate } from '@/lib/mixcloud';
 import { useMixcloudPlayer } from '@/contexts/MixcloudPlayerContext';
 import type { ClassifiedCloudcast } from '@/types/mixcloud';
@@ -417,6 +418,7 @@ export default function OnDemandPage() {
           </>
         )}
       </div>
+      <Footer />
     </div>
   );
 }

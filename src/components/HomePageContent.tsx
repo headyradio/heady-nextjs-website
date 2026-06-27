@@ -28,7 +28,7 @@ import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/comp
 import { RefreshCw } from 'lucide-react';
 import { FeaturedArticlesClient } from '@/components/FeaturedArticlesClient';
 import { FeaturedOnDemandClient } from '@/components/FeaturedOnDemandClient';
-import { ManageCookiePreferencesLink } from '@/components/CookieConsentBanner';
+import { Footer } from '@/components/Footer';
 
 interface HomePageContentProps {
   initialData?: InitialServerData;
@@ -292,23 +292,7 @@ const transmissions = historyData
 
 
 
-      {/* Footer - Desktop Only */}
-      <footer className="hidden md:block border-t border-white/10 py-12 mt-8">
-        <div className="container mx-auto px-4">
-          <div className="text-center space-y-4">
-            <h3 className="text-2xl font-black text-white">
-              HEADY EXTRATERRESTRIAL RADIO
-            </h3>
-            <div className="pt-4 text-sm text-white/40 space-y-2">
-              <p>©2026 HEADY Radio. All rights reserved.</p>
-              <div className="flex items-center justify-center gap-4">
-                <a href="/privacy-policy" className="underline hover:text-white/60">Privacy Policy</a>
-                <ManageCookiePreferencesLink />
-              </div>
-            </div>
-          </div>
-        </div>
-      </footer>
+      <Footer variant="branded" />
 
       <FloatingChatWidget />
       <DonationBanner />

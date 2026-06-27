@@ -1,6 +1,7 @@
 "use client";
 
 import Navigation from "@/components/Navigation";
+import { Footer } from "@/components/Footer";
 import { useMeetups } from "@/hooks/useMeetups";
 import { MeetupCard } from "@/components/MeetupCard";
 import { MeetupDialog } from "@/components/MeetupDialog";
@@ -69,9 +70,7 @@ export default function MeetupsPage() {
       
       {/* <MeetupDialog open={showCreateDialog} onOpenChange={setShowCreateDialog} /> */}
       
-      <footer className="container mx-auto px-4 py-12 border-t border-white/10 text-center text-sm text-white/50">
-        <p>©2026 HEADY Radio. All rights reserved.</p>
-      </footer>
+      <Footer />
     </div>
   );
 }

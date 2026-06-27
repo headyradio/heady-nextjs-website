@@ -2,6 +2,7 @@
 
 import { useMixtapes } from "@/hooks/useMixtapes";
 import Navigation from "@/components/Navigation";
+import { Footer } from "@/components/Footer";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Music, Play, ExternalLink } from "lucide-react";
 
@@ -71,9 +72,7 @@ export default function MixtapesPage() {
         )}
       </div>
       
-      <footer className="container mx-auto px-4 py-12 border-t border-white/10 text-center text-sm text-white/50">
-        <p>©2026 HEADY Radio. All rights reserved.</p>
-      </footer>
+      <Footer />
     </div>
   );
 }

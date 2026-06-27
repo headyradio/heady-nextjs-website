@@ -3,6 +3,7 @@
 import { useAuth } from "@/hooks/useAuth";
 import { useUserRole } from "@/hooks/useUserRole";
 import Navigation from "@/components/Navigation";
+import { Footer } from "@/components/Footer";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -89,9 +90,7 @@ export default function AdminPage() {
         </div>
       </div>
       
-      <footer className="container mx-auto px-4 py-12 border-t border-white/10 text-center text-sm text-white/50">
-        <p>©2026 HEADY Radio Admin</p>
-      </footer>
+      <Footer />
     </div>
   );
 }

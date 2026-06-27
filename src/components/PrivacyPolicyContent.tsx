@@ -1,5 +1,5 @@
 export function PrivacyPolicyContent() {
-  const lastUpdated = 'March 17, 2026';
+  const lastUpdated = 'June 27, 2026';
 
   return (
     <div className="text-sm leading-relaxed text-white/70">
@@ -16,14 +16,18 @@ export function PrivacyPolicyContent() {
           </h2>
           <p>
             HEADY.FM (&ldquo;we,&rdquo; &ldquo;us,&rdquo; or &ldquo;our&rdquo;) is an internet radio
-            station operated by Prospect Media. This Privacy Policy explains how we handle
+            station independently operated by Johan Moreno (dba HEADY.FM). This Privacy Policy explains how we handle
             information when you visit{' '}
             <a href="https://heady.fm" className="text-emerald-400 underline">
               heady.fm
             </a>{' '}
-            (&ldquo;the Site&rdquo;). For privacy requests, contact us at{' '}
-            <a href="mailto:privacy@heady.fm" className="text-emerald-400 underline">
-              privacy@heady.fm
+            (&ldquo;the Site&rdquo;). Your use of the Site is also governed by our{' '}
+            <a href="/terms" className="text-emerald-400 underline">
+              Terms of Service
+            </a>
+            . For privacy requests, contact us at{' '}
+            <a href="mailto:compliance@heady.fm" className="text-emerald-400 underline">
+              compliance@heady.fm
             </a>
             .
           </p>
@@ -142,8 +146,8 @@ export function PrivacyPolicyContent() {
           </ul>
           <p className="mt-3">
             To exercise these rights, email{' '}
-            <a href="mailto:privacy@heady.fm" className="text-emerald-400 underline">
-              privacy@heady.fm
+            <a href="mailto:compliance@heady.fm" className="text-emerald-400 underline">
+              compliance@heady.fm
             </a>
             .
           </p>
@@ -174,8 +178,8 @@ export function PrivacyPolicyContent() {
             Analytics data is retained for 14 months by default, after which it is
             automatically deleted. Account data is retained as long as your account is active.
             You can request deletion at any time by emailing{' '}
-            <a href="mailto:privacy@heady.fm" className="text-emerald-400 underline">
-              privacy@heady.fm
+            <a href="mailto:compliance@heady.fm" className="text-emerald-400 underline">
+              compliance@heady.fm
             </a>
             .
           </p>
@@ -183,7 +187,94 @@ export function PrivacyPolicyContent() {
 
         <section>
           <h2 className="mb-3 text-base font-bold uppercase tracking-wide text-white">
-            8. Changes to This Policy
+            8. Service Providers We Use
+          </h2>
+          <p className="mb-3">
+            We use trusted third-party services to operate the Site. Each provider only
+            receives the data needed to perform its function and is contractually bound to
+            handle it consistently with this policy.
+          </p>
+          <ul className="list-disc space-y-2 pl-5">
+            <li>
+              <strong className="text-white">Vercel</strong> &mdash; site hosting,
+              deployment, and performance analytics.
+            </li>
+            <li>
+              <strong className="text-white">Supabase</strong> &mdash; account, profile,
+              and saved-song storage.
+            </li>
+            <li>
+              <strong className="text-white">Google Analytics</strong> &mdash; aggregate
+              traffic analytics (you can opt out via Cookie Preferences).
+            </li>
+            <li>
+              <strong className="text-white">Sanity</strong> &mdash; content management for
+              HEADYZINE articles and editorial content.
+            </li>
+            <li>
+              <strong className="text-white">Payment processors</strong> &mdash; donations
+              are processed by third-party payment providers under their own terms and
+              privacy policies. We do not store full payment card details.
+            </li>
+          </ul>
+        </section>
+
+        <section>
+          <h2 className="mb-3 text-base font-bold uppercase tracking-wide text-white">
+            9. Data Security
+          </h2>
+          <p>
+            We use commercially reasonable administrative, technical, and physical
+            safeguards to protect your information &mdash; including encryption in transit
+            (HTTPS), encrypted storage at our service providers, and access controls on
+            internal systems. No method of transmission or storage is 100% secure; you use
+            the Site at your own risk. If we become aware of a security incident affecting
+            your information, we will notify you and applicable regulators as required by
+            law.
+          </p>
+        </section>
+
+        <section>
+          <h2 className="mb-3 text-base font-bold uppercase tracking-wide text-white">
+            10. Children&apos;s Privacy
+          </h2>
+          <p>
+            The Site is not directed to children under 13, and we do not knowingly collect
+            personal information from anyone under 13. If you believe a child has
+            provided us with personal information, please contact{' '}
+            <a href="mailto:compliance@heady.fm" className="text-emerald-400 underline">
+              compliance@heady.fm
+            </a>{' '}
+            and we will delete it.
+          </p>
+        </section>
+
+        <section>
+          <h2 className="mb-3 text-base font-bold uppercase tracking-wide text-white">
+            11. International Users
+          </h2>
+          <p className="mb-3">
+            The Site is operated from the United States. If you access it from outside
+            the U.S., your information may be transferred to, stored, and processed in
+            the United States, where data-protection laws may differ from those in your
+            country.
+          </p>
+          <p>
+            If you are in the European Economic Area, the United Kingdom, or
+            another region with comparable privacy rights, you may have additional
+            rights, including the right to access, correct, port, or erase your personal
+            information, and to object to or restrict its processing. To exercise these
+            rights, email{' '}
+            <a href="mailto:compliance@heady.fm" className="text-emerald-400 underline">
+              compliance@heady.fm
+            </a>
+            .
+          </p>
+        </section>
+
+        <section>
+          <h2 className="mb-3 text-base font-bold uppercase tracking-wide text-white">
+            12. Changes to This Policy
           </h2>
           <p>
             We may update this policy from time to time. Material changes will be noted by
@@ -193,12 +284,12 @@ export function PrivacyPolicyContent() {
 
         <section>
           <h2 className="mb-3 text-base font-bold uppercase tracking-wide text-white">
-            9. Contact
+            13. Contact
           </h2>
           <p>
             For privacy-related questions or requests, contact:{' '}
-            <a href="mailto:privacy@heady.fm" className="text-emerald-400 underline">
-              privacy@heady.fm
+            <a href="mailto:compliance@heady.fm" className="text-emerald-400 underline">
+              compliance@heady.fm
             </a>
           </p>
         </section>

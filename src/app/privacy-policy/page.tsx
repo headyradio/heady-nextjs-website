@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import Navigation from '@/components/Navigation';
-import { ManageCookiePreferencesLink } from '@/components/CookieConsentBanner';
+import { Footer } from '@/components/Footer';
 import { PrivacyPolicyContent } from '@/components/PrivacyPolicyContent';
 
 export const metadata: Metadata = {
@@ -16,12 +16,9 @@ export default function PrivacyPolicyPage() {
 
       <div className="container mx-auto max-w-3xl px-4 py-16">
         <PrivacyPolicyContent />
-
-        <div className="mt-16 border-t border-white/10 pt-8 text-center text-xs text-white/30">
-          <p className="mb-2">©2026 HEADY Radio. All rights reserved.</p>
-          <ManageCookiePreferencesLink />
-        </div>
       </div>
+
+      <Footer />
     </div>
   );
 }

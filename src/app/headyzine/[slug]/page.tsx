@@ -4,6 +4,7 @@ import { Suspense } from "react";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import Navigation from "@/components/Navigation";
+import { Footer } from "@/components/Footer";
 import { sanityFetch } from "@/lib/sanity/client";
 import { urlFor } from "@/lib/sanity/client";
 import {
@@ -258,9 +259,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
         </Suspense>
       )}
 
-      <footer className="container mx-auto px-4 py-12 border-t border-white/10 text-center text-sm text-white/50">
-        <p>©2026 HEADY Radio. All rights reserved.</p>
-      </footer>
+      <Footer />
     </main>
   );
 }

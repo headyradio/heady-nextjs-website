@@ -6,6 +6,7 @@ import { useGeniusArtistData } from "@/hooks/useGeniusArtistData";
 import { useArtistTopSongs } from "@/hooks/useArtistTopSongs";
 import { useArtistDetails } from "@/hooks/useArtistDetails";
 import Navigation from "@/components/Navigation";
+import { Footer } from "@/components/Footer";
 import { SongHeroSection } from "@/components/SongHeroSection";
 import { AboutTheTrack } from "@/components/AboutTheTrack";
 import { AboutTheArtist } from "@/components/AboutTheArtist";
@@ -159,9 +160,7 @@ export default function SongPageClient({ artist, title }: SongPageClientProps) {
       </div>
 
       {/* Footer */}
-      <footer className="container mx-auto px-4 py-12 border-t border-white/10 text-center text-sm text-white/50">
-        <p>©2026 HEADY Radio. All rights reserved.</p>
-      </footer>
+      <Footer />
     </div>
   );
 }

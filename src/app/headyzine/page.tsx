@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Navigation from "@/components/Navigation";
+import { Footer } from "@/components/Footer";
 import { sanityFetch } from "@/lib/sanity/client";
 import { allArticlesQuery, allCategoriesQuery, allTagsQuery } from "@/lib/sanity/queries";
 import { NewsIndex } from "@/components/headyzine/NewsIndex";
@@ -64,9 +65,7 @@ export default async function HeadyzinePage() {
         />
       </div>
 
-      <footer className="container mx-auto px-4 py-12 border-t border-white/10 text-center text-sm text-white/50">
-        <p>©2026 HEADY Radio. All rights reserved.</p>
-      </footer>
+      <Footer />
     </div>
   );
 }
