@@ -41,7 +41,7 @@ export default function TermsPage() {
               </p>
               <p>
                 By accessing or using the Service, you agree to these Terms and to our{' '}
-                <a href="/privacy-policy" className="text-emerald-400 underline">
+                <a href="/privacy" className="text-emerald-400 underline">
                   Privacy Policy
                 </a>
                 . If you do not agree, do not use the Service.

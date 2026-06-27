@@ -15,7 +15,7 @@ export function Footer({ variant = 'default' }: FooterProps) {
         About
       </Link>
       <span className="text-white/20" aria-hidden="true">·</span>
-      <Link href="/privacy-policy" className="text-white/50 hover:text-white/80 transition-colors">
+      <Link href="/privacy" className="text-white/50 hover:text-white/80 transition-colors">
         Privacy
       </Link>
       <span className="text-white/20" aria-hidden="true">·</span>

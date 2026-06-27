@@ -208,7 +208,7 @@ function PreferencesModal({ onClose }: { onClose: () => void }) {
 
         <p className="mt-4 text-center text-xs text-white/30">
           <a
-            href="/privacy-policy"
+            href="/privacy"
             target="_blank"
             rel="noopener noreferrer"
             className="underline hover:text-white/60"
