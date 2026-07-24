@@ -39,7 +39,7 @@ export function Footer({ variant = 'default' }: FooterProps) {
             <h3 className="text-2xl font-black text-white">
               HEADY EXTRATERRESTRIAL RADIO
             </h3>
-            <div className="pt-4 text-sm text-white/40 space-y-3">
+            <div className="pt-4 text-sm text-white/60 space-y-3">
               <p>©2026 HEADY Radio. All rights reserved.</p>
               {links}
             </div>

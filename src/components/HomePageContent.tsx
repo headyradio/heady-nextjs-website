@@ -117,6 +117,7 @@ const transmissions = historyData
       {/* Navigation with Audio Player */}
       <Navigation />
 
+      <main>
       {/* Mobile: Tab Content */}
       <div className="md:hidden bg-black">
         {mobileTab === 'player' && (
@@ -289,8 +290,7 @@ const transmissions = historyData
           <FeaturedArticlesClient />
         </div>
       </section>
-
-
+      </main>
 
       <Footer variant="branded" />
 

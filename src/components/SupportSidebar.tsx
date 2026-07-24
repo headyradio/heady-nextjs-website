@@ -147,7 +147,7 @@ export const SupportSidebar = () => {
         </div>
 
         {/* Trust Badge */}
-        <div className="flex items-center justify-center gap-1 text-xs text-white/40">
+        <div className="flex items-center justify-center gap-1 text-xs text-white/70">
           <Shield className="h-3 w-3" />
           <span className="font-medium">Secure via Stripe</span>
         </div>

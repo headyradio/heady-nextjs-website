@@ -111,7 +111,7 @@ const Navigation = () => {
                 }}
                 className="flex items-center"
               >
-                <img src="/HEADY Logo.svg" alt="HEADY Radio" className="h-10 w-auto cursor-pointer hover:opacity-80 transition-opacity" />
+                <img src="/heady-logo.webp" alt="HEADY Radio" width={80} height={40} className="h-10 w-auto cursor-pointer hover:opacity-80 transition-opacity" />
               </Link>
             </div>
 
@@ -120,7 +120,7 @@ const Navigation = () => {
               {/* Support Button - Desktop */}
               <Button
                 onClick={() => setSupportDialogOpen(true)}
-                className="hidden md:inline-flex items-center gap-2 bg-[#e53935] hover:bg-[#c62828] text-white font-bold px-4 h-9"
+                className="hidden md:inline-flex items-center gap-2 bg-[#c62828] hover:bg-[#b71c1c] text-white font-bold px-4 h-9"
                 aria-label="Support HEADY.FM"
               >
                 <Heart className="h-4 w-4" />

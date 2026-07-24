@@ -1,6 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
+import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, Loader2, Play, Clock } from "lucide-react";
 import { fetchCloudcasts, classifyCloudcast, formatDuration } from "@/lib/mixcloud";
@@ -31,10 +32,12 @@ function OnDemandTile({
     <Link href={`/on-demand/${c.slug}`} className="block group">
       <div className="relative rounded-xl overflow-hidden aspect-square cursor-pointer">
         {img && (
-          <img
+          <Image
             src={img}
             alt={c.name}
-            className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+            fill
+            sizes="(max-width: 768px) 90vw, 33vw"
+            className="object-cover group-hover:scale-105 transition-transform duration-500"
           />
         )}
         <div

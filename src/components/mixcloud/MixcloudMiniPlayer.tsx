@@ -28,15 +28,19 @@ export function MixcloudMiniPlayer() {
   const iframeRef = React.useRef<HTMLIFrameElement>(null);
   const widgetRef = React.useRef<MixcloudWidget | null>(null);
 
-  // Inject the Mixcloud Widget API script once
+  // Inject the Mixcloud Widget API script once — but only after an on-demand mix is
+  // actually loaded. Injecting eagerly pulled ~65 KB of legacy JS into every page load
+  // (including the homepage) even when no cloudcast was playing. handleIframeLoad polls
+  // for window.Mixcloud, so loading the script alongside the iframe is fine.
   React.useEffect(() => {
+    if (!isLoaded) return;
     if (document.querySelector('script[data-mixcloud-widget]')) return;
     const script = document.createElement('script');
     script.src = 'https://widget.mixcloud.com/media/js/widgetApi.js';
     script.async = true;
     script.setAttribute('data-mixcloud-widget', '1');
     document.head.appendChild(script);
-  }, []);
+  }, [isLoaded]);
 
   // Initialize widget after iframe loads; poll for window.Mixcloud if script isn't ready yet
   const handleIframeLoad = React.useCallback(async () => {

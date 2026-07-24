@@ -19,9 +19,9 @@ export const ExperienceCard = () => {
         </div>
         
         {/* Heading */}
-        <h3 className="text-base md:text-lg font-black text-white mb-2 leading-tight">
+        <h2 className="text-base md:text-lg font-black text-white mb-2 leading-tight">
           Join or Sign in to My HEADY
-        </h3>
+        </h2>
         
         {/* Description */}
         <p className="text-xs md:text-sm text-white/80 mb-4 leading-relaxed">

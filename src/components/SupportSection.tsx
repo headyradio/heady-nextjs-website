@@ -185,7 +185,7 @@ export const SupportSection = () => {
             </div>
 
             {/* Trust Indicators */}
-            <div className="flex items-center justify-center gap-2 mt-8 text-sm text-white/40">
+            <div className="flex items-center justify-center gap-2 mt-8 text-sm text-white/60">
               <Shield className="h-4 w-4" />
               <span className="font-medium">Secure payment powered by Stripe</span>
             </div>

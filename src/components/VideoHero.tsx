@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
+import Image from 'next/image';
 import { Eye, EyeOff, Shuffle } from 'lucide-react';
 
 // Video sources - Bunny.net CDN optimized videos
@@ -52,6 +53,9 @@ export const VideoHero = () => {
   const [currentVideo, setCurrentVideo] = useState(VIDEO_SOURCES[0]);
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
   const [isHydrated, setIsHydrated] = useState(false);
+  // Gate the heavy (~3 MB) background video until the browser is idle so it stays off
+  // the critical path — the poster image is the LCP and the video fades in afterward.
+  const [canLoadVideo, setCanLoadVideo] = useState(false);
 
   // Client-side initialization after hydration
   useEffect(() => {
@@ -65,6 +69,19 @@ export const VideoHero = () => {
     
     // Randomize video on client mount (after hydration)
     setCurrentVideo(getRandomVideo());
+
+    // Defer loading the background video until the browser is idle so the ~3 MB MP4
+    // doesn't compete with the LCP poster for bandwidth on first paint.
+    const w = window as typeof window & {
+      requestIdleCallback?: (cb: () => void, opts?: { timeout: number }) => number;
+      cancelIdleCallback?: (id: number) => void;
+    };
+    const schedule =
+      w.requestIdleCallback ??
+      ((cb: () => void, _opts?: { timeout: number }) => window.setTimeout(cb, 1500));
+    const cancel = w.cancelIdleCallback ?? window.clearTimeout;
+    const idleId = schedule(() => setCanLoadVideo(true), { timeout: 3000 });
+    return () => cancel(idleId);
   }, []);
 
   // Check for reduced motion preference (accessibility)
@@ -81,7 +98,7 @@ export const VideoHero = () => {
 
   // Intersection Observer - only play video when visible (performance optimization)
   useEffect(() => {
-    if (!videoRef.current || !containerRef.current || !isVideoEnabled || prefersReducedMotion || isCollapsed) return;
+    if (!canLoadVideo || !videoRef.current || !containerRef.current || !isVideoEnabled || prefersReducedMotion || isCollapsed) return;
 
     const videoElement = videoRef.current;
     
@@ -89,8 +106,11 @@ export const VideoHero = () => {
     const playVideo = async () => {
       try {
         await videoElement.play();
-        console.log('Video playing successfully:', currentVideo.id);
       } catch (error) {
+        // play() rejects with AbortError when the element is paused or removed from
+        // the document before playback starts (shuffle, collapse, unmount). That's
+        // expected, not a failure — don't log it to the console.
+        if (error instanceof DOMException && error.name === 'AbortError') return;
         console.error('Video autoplay failed:', error);
       }
     };
@@ -110,7 +130,7 @@ export const VideoHero = () => {
 
     observer.observe(containerRef.current);
     return () => observer.disconnect();
-  }, [isVideoEnabled, prefersReducedMotion, isCollapsed, currentVideo]);
+  }, [canLoadVideo, isVideoEnabled, prefersReducedMotion, isCollapsed, currentVideo]);
 
   // Handle video load complete
   const handleVideoLoaded = useCallback(() => {
@@ -153,18 +173,26 @@ export const VideoHero = () => {
     >
       {!isCollapsed && (
         <>
-          {/* Poster/Fallback Image - Always present for fast LCP */}
-          <div 
-            className="absolute inset-0 bg-cover bg-center transition-opacity duration-1000"
-            style={{ 
-              backgroundImage: `url(${currentVideo.poster})`,
-              opacity: isVideoLoaded && showVideo ? 0 : 1,
-            }}
+          {/* Poster/Fallback Image — the LCP element. Routed through Next/Image so it's
+              served right-sized as WebP and is discoverable/priority-loaded (Bunny's own
+              optimizer is disabled on this zone). */}
+          <div
+            className="absolute inset-0 transition-opacity duration-1000"
+            style={{ opacity: isVideoLoaded && showVideo ? 0 : 1 }}
             aria-hidden="true"
-          />
+          >
+            <Image
+              src={currentVideo.poster}
+              alt=""
+              fill
+              priority
+              sizes="100vw"
+              className="object-cover object-center"
+            />
+          </div>
 
-          {/* Video Background */}
-          {showVideo && (
+          {/* Video Background — mounted only once the browser is idle (post-LCP) */}
+          {showVideo && canLoadVideo && (
             <video
               ref={videoRef}
               key={currentVideo.id} // Force re-render when video changes

@@ -66,8 +66,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" className="dark" style={{ colorScheme: "dark" }} suppressHydrationWarning>
       <head>
+        {/* Preconnect to the origins on the critical path: the Bunny CDN serves the
+            hero poster (LCP) + background video, and RadioBoss serves the live album art. */}
+        <link rel="preconnect" href="https://vz-dfce7f34-8cf.b-cdn.net" crossOrigin="" />
+        <link rel="preconnect" href="https://c22.radioboss.fm" />
+
         {/* GA Consent Mode v2 — must run synchronously BEFORE any GA script loads.
             Analytics defaults to granted (opt-out model); ad signals remain denied.
             If user has previously opted out, the GoogleAnalytics component will

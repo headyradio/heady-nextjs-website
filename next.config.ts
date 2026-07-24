@@ -48,6 +48,16 @@ const nextConfig: NextConfig = {
         protocol: 'https',
         hostname: '*.mzstatic.com',
       },
+      {
+        protocol: 'https',
+        hostname: 'thumbnailer.mixcloud.com',
+      },
+      {
+        // Bunny Stream CDN (hero video posters). Bunny Optimizer is off on this zone,
+        // so route posters through Next/Image to right-size + serve WebP.
+        protocol: 'https',
+        hostname: 'vz-dfce7f34-8cf.b-cdn.net',
+      },
     ],
   },
 };

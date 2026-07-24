@@ -233,6 +233,13 @@ export const useRadioBoss = (
   useEffect(() => {
     if (disabled || !isInitialized) return;
 
+    // Reconcile immediately on mount. SSR/edge initial data can be stale — the page
+    // HTML is ISR-cached (revalidate: 30s) while the RadioBoss artwork endpoint is
+    // always live, so on a first visit the album art is current but the track text
+    // is from a previous song. Fetch once now so the text catches up to the art
+    // within one request instead of waiting a full poll interval (~10s).
+    fetchRadioData();
+
     const interval = setInterval(fetchRadioData, SMART_POLL_INTERVAL);
     return () => clearInterval(interval);
   }, [disabled, fetchRadioData, isInitialized]);

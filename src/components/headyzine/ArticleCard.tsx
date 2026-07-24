@@ -49,7 +49,7 @@ export function ArticleCard({ article, featured = false }: ArticleCardProps) {
           {/* Category Badge */}
           {article.category && (
             <div className="absolute top-4 left-4">
-              <span className="inline-block px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-[hsl(150,55%,35%)] text-white">
+              <span className="inline-block px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-[hsl(150,55%,30%)] text-white">
                 {article.category.title}
               </span>
             </div>
